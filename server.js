@@ -16,6 +16,9 @@ const sessions = new Map();
 
 const ADMIN_COOKIE = "alhelwany_admin_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
+const MAX_STRING_LENGTH = 500;
+const MAX_NOTES_LENGTH = 2000;
+const ALLOWED_PAYMENT_METHODS = new Set(["Cash on Delivery", "Visa", "Credit Card"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -72,6 +75,30 @@ function sendHtml(res, statusCode, html) {
     "Cache-Control": "no-store",
   });
   res.end(html);
+}
+
+function setSecurityHeaders(req, res) {
+  const nonce = crypto.randomBytes(16).toString("base64");
+  res.locals = { cspNonce: nonce };
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+  res.setHeader("Content-Security-Policy", [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com https://fonts.gstatic.com`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' data: https:",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+    "upgrade-insecure-requests",
+  ].join("; "));
 }
 
 function parseCookies(req) {
@@ -143,6 +170,144 @@ function sendFile(res, filePath) {
   fs.createReadStream(filePath).pipe(res);
 }
 
+function isMutationMethod(method) {
+  return method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
+}
+
+function getRequestOrigin(req) {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const protocol = Array.isArray(forwardedProto)
+    ? forwardedProto[0]
+    : (forwardedProto || "http").split(",")[0].trim() || "http";
+  return `${protocol}://${req.headers.host}`;
+}
+
+function hasTrustedOrigin(req) {
+  const origin = req.headers.origin;
+  if (origin) {
+    return origin === getRequestOrigin(req);
+  }
+
+  const secFetchSite = req.headers["sec-fetch-site"];
+  return !secFetchSite || secFetchSite === "same-origin" || secFetchSite === "same-site" || secFetchSite === "none";
+}
+
+function escapeHtml(value) {
+  return value.replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return char;
+    }
+  });
+}
+
+function sanitizeText(value, maxLength = MAX_STRING_LENGTH) {
+  return escapeHtml(String(value || "").trim()).slice(0, maxLength);
+}
+
+function isAllowedUrl(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  if (/^data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+$/.test(trimmed)) {
+    return true;
+  }
+
+  if (trimmed.startsWith("/") || trimmed.startsWith("./") || trimmed.startsWith("../")) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    return ["http:", "https:", "tel:"].includes(parsed.protocol);
+  } catch (_error) {
+    return false;
+  }
+}
+
+function sanitizeContentPayload(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeContentPayload(item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return typeof value === "string" ? sanitizeText(value, MAX_NOTES_LENGTH) : value;
+  }
+
+  const sanitized = {};
+
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry === "string") {
+      if (/(image|logo|url|href|src)$/i.test(key)) {
+        if (!isAllowedUrl(entry)) {
+          throw new Error(`Invalid URL for ${key}`);
+        }
+        sanitized[key] = entry.trim();
+        continue;
+      }
+
+      sanitized[key] = sanitizeText(entry, MAX_NOTES_LENGTH);
+      continue;
+    }
+
+    sanitized[key] = sanitizeContentPayload(entry);
+  }
+
+  return sanitized;
+}
+
+function sanitizeOrderPayload(body) {
+  const order = {
+    firstName: sanitizeText(body.firstName),
+    lastName: sanitizeText(body.lastName),
+    thirdName: sanitizeText(body.thirdName),
+    phone: sanitizeText(body.phone, 50),
+    whatsapp: sanitizeText(body.whatsapp, 50),
+    country: sanitizeText(body.country, 80),
+    governorate: sanitizeText(body.governorate, 80),
+    paymentMethod: sanitizeText(body.paymentMethod, 40),
+    notes: sanitizeText(body.notes || "", MAX_NOTES_LENGTH),
+  };
+
+  const requiredFields = [
+    "firstName",
+    "lastName",
+    "thirdName",
+    "phone",
+    "whatsapp",
+    "country",
+    "governorate",
+    "paymentMethod",
+  ];
+
+  const missingField = requiredFields.find((field) => !order[field]);
+  if (missingField) {
+    throw new Error(`Missing field: ${missingField}`);
+  }
+
+  if (!ALLOWED_PAYMENT_METHODS.has(order.paymentMethod)) {
+    throw new Error("Invalid payment method");
+  }
+
+  return order;
+}
+
 function parseBody(req) {
   return new Promise((resolve, reject) => {
     let body = "";
@@ -176,6 +341,11 @@ function safePathFromUrl(urlPath) {
 }
 
 async function handleApi(req, res, pathname) {
+  if (isMutationMethod(req.method) && !hasTrustedOrigin(req)) {
+    sendJson(res, 403, { error: "Blocked by CSRF protection" });
+    return true;
+  }
+
   if (pathname === "/api/auth/status" && req.method === "GET") {
     sendJson(res, 200, { authenticated: Boolean(getSession(req)) });
     return true;
@@ -224,7 +394,7 @@ async function handleApi(req, res, pathname) {
         return true;
       }
 
-      writeJson(contentPath, body);
+      writeJson(contentPath, sanitizeContentPayload(body));
       sendJson(res, 200, { ok: true });
     } catch (error) {
       sendJson(res, 400, { error: error.message });
@@ -257,35 +427,11 @@ async function handleApi(req, res, pathname) {
   if (pathname === "/api/orders" && req.method === "POST") {
     try {
       const body = await parseBody(req);
-      const requiredFields = [
-        "firstName",
-        "lastName",
-        "thirdName",
-        "phone",
-        "whatsapp",
-        "country",
-        "governorate",
-        "paymentMethod",
-      ];
-
-      const missingField = requiredFields.find((field) => !body[field]);
-      if (missingField) {
-        sendJson(res, 400, { error: `Missing field: ${missingField}` });
-        return true;
-      }
-
       const orders = readJson(ordersPath);
+      const sanitizedOrder = sanitizeOrderPayload(body);
       const order = {
         id: crypto.randomUUID(),
-        firstName: String(body.firstName).trim(),
-        lastName: String(body.lastName).trim(),
-        thirdName: String(body.thirdName).trim(),
-        phone: String(body.phone).trim(),
-        whatsapp: String(body.whatsapp).trim(),
-        country: String(body.country).trim(),
-        governorate: String(body.governorate).trim(),
-        paymentMethod: String(body.paymentMethod).trim(),
-        notes: String(body.notes || "").trim(),
+        ...sanitizedOrder,
         createdAt: new Date().toISOString(),
       };
 
@@ -339,6 +485,7 @@ function handleStatic(req, res, pathname) {
 ensureDataFiles();
 
 const server = http.createServer(async (req, res) => {
+  setSecurityHeaders(req, res);
   const url = new URL(req.url, "http://localhost");
   const pathname = url.pathname;
 
