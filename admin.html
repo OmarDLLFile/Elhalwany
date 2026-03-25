@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة الإدارة | مخللات الحلواني</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <div>
+          <p class="eyebrow">لوحة تحكم المحتوى</p>
+          <h1>إدارة بيانات الموقع</h1>
+          <p>عدّل النصوص والصور ثم اضغط حفظ. الصفحة الرئيسية ستقرأ البيانات الجديدة مباشرة من التخزين المحلي للمتصفح.</p>
+        </div>
+        <div class="header-actions">
+          <a class="ghost-button" href="index.html" target="_blank" rel="noopener noreferrer">فتح الموقع</a>
+          <button class="ghost-button" id="logout-button" type="button">تسجيل الخروج</button>
+          <button class="ghost-button" id="export-button" type="button">تصدير JSON</button>
+          <button class="ghost-button danger" id="reset-button" type="button">استعادة الافتراضي</button>
+          <button class="primary-button" id="save-button" type="button">حفظ التعديلات</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <section class="admin-card">
+        <h2>العلامة التجارية</h2>
+        <div class="form-grid">
+          <label>
+            <span>اسم العلامة</span>
+            <input id="brand-name" type="text" />
+          </label>
+          <label>
+            <span>السطر التعريفي</span>
+            <input id="brand-tagline" type="text" />
+          </label>
+          <label class="full">
+            <span>وصف الفوتر</span>
+            <textarea id="brand-footer-summary" rows="3"></textarea>
+          </label>
+          <label class="full">
+            <span>صورة الشعار</span>
+            <input id="brand-logo" type="text" placeholder="assets/images/logo.jpg أو صورة base64" />
+            <input class="file-input" data-target="brand-logo" type="file" accept="image/*" />
+          </label>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>Hero</h2>
+        <div class="form-grid">
+          <label><span>Eyebrow</span><input id="hero-eyebrow" type="text" /></label>
+          <label><span>العنوان الرئيسي</span><input id="hero-title" type="text" /></label>
+          <label><span>Tagline</span><input id="hero-tagline" type="text" /></label>
+          <label><span>زر واتساب</span><input id="hero-primary-cta" type="text" /></label>
+          <label><span>زر الاستكشاف</span><input id="hero-secondary-cta" type="text" /></label>
+          <label class="full"><span>وصف القسم</span><textarea id="hero-text" rows="4"></textarea></label>
+          <label class="full">
+            <span>صورة Hero</span>
+            <input id="hero-image" type="text" />
+            <input class="file-input" data-target="hero-image" type="file" accept="image/*" />
+          </label>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>شرائط الثقة</h3>
+            <button class="ghost-button small" data-add-array="hero-trust" type="button">إضافة</button>
+          </div>
+          <div id="hero-trust-editor" class="editor-list"></div>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>الإحصائيات</h3>
+            <button class="ghost-button small" data-add-array="hero-metrics" type="button">إضافة</button>
+          </div>
+          <div id="hero-metrics-editor" class="editor-list"></div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>من نحن</h2>
+        <div class="form-grid">
+          <label><span>Label</span><input id="about-label" type="text" /></label>
+          <label><span>العنوان</span><input id="about-title" type="text" /></label>
+          <label class="full"><span>النص الأول</span><textarea id="about-text-1" rows="4"></textarea></label>
+          <label class="full"><span>النص الثاني</span><textarea id="about-text-2" rows="4"></textarea></label>
+          <label><span>رقم الخبرة</span><input id="about-experience-value" type="text" /></label>
+          <label><span>عنوان الخبرة</span><input id="about-experience-title" type="text" /></label>
+          <label class="full"><span>وصف الخبرة</span><textarea id="about-experience-text" rows="3"></textarea></label>
+          <label class="full">
+            <span>صورة القسم</span>
+            <input id="about-image" type="text" />
+            <input class="file-input" data-target="about-image" type="file" accept="image/*" />
+          </label>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>المنتجات</h2>
+        <div class="form-grid">
+          <label><span>Label</span><input id="products-label" type="text" /></label>
+          <label><span>العنوان</span><input id="products-title" type="text" /></label>
+          <label class="full"><span>الوصف</span><textarea id="products-subtitle" rows="3"></textarea></label>
+          <label><span>نص زر التفاصيل</span><input id="products-details-label" type="text" /></label>
+          <label><span>نص طلب الصنف</span><input id="products-order-label" type="text" /></label>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>عناصر المنتجات</h3>
+            <button class="ghost-button small" data-add-array="products-items" type="button">إضافة منتج</button>
+          </div>
+          <div id="products-items-editor" class="editor-list"></div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>لماذا نحن</h2>
+        <div class="form-grid">
+          <label><span>Label</span><input id="why-label" type="text" /></label>
+          <label><span>العنوان</span><input id="why-title" type="text" /></label>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>مميزات القسم</h3>
+            <button class="ghost-button small" data-add-array="why-features" type="button">إضافة</button>
+          </div>
+          <div id="why-features-editor" class="editor-list"></div>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>عناصر الثقة</h3>
+            <button class="ghost-button small" data-add-array="why-trust" type="button">إضافة</button>
+          </div>
+          <div id="why-trust-editor" class="editor-list"></div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>المعرض</h2>
+        <div class="form-grid">
+          <label><span>Label</span><input id="gallery-label" type="text" /></label>
+          <label><span>العنوان</span><input id="gallery-title" type="text" /></label>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>صور المعرض</h3>
+            <button class="ghost-button small" data-add-array="gallery-items" type="button">إضافة صورة</button>
+          </div>
+          <div id="gallery-items-editor" class="editor-list"></div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>ثقة العملاء</h2>
+        <div class="form-grid">
+          <label><span>Label</span><input id="testimonials-label" type="text" /></label>
+          <label><span>العنوان</span><input id="testimonials-title" type="text" /></label>
+          <label class="full"><span>الوصف</span><textarea id="testimonials-subtitle" rows="3"></textarea></label>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>بطاقات الثقة</h3>
+            <button class="ghost-button small" data-add-array="testimonials-items" type="button">إضافة</button>
+          </div>
+          <div id="testimonials-items-editor" class="editor-list"></div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>التواصل</h2>
+        <div class="form-grid">
+          <label><span>Label</span><input id="contact-label" type="text" /></label>
+          <label><span>العنوان</span><input id="contact-title" type="text" /></label>
+          <label class="full"><span>الوصف</span><textarea id="contact-text" rows="3"></textarea></label>
+          <label><span>رقم واتساب المعروض</span><input id="contact-whatsapp-display" type="text" /></label>
+          <label><span>رقم الهاتف المعروض</span><input id="contact-phone-display" type="text" /></label>
+          <label><span>رقم واتساب الدولي بدون +</span><input id="contact-whatsapp-wa-number" type="text" /></label>
+          <label><span>نص زر واتساب</span><input id="contact-whatsapp-label" type="text" /></label>
+          <label><span>نص واتساب في الفوتر</span><input id="contact-footer-whatsapp-label" type="text" /></label>
+          <label><span>نص زر الخريطة</span><input id="contact-map-label" type="text" /></label>
+          <label><span>نص رابط الخريطة في الفوتر</span><input id="contact-footer-map-label" type="text" /></label>
+          <label class="full"><span>رابط الخريطة</span><input id="contact-map-url" type="text" /></label>
+        </div>
+        <div class="editor-block">
+          <div class="block-header">
+            <h3>سطور العنوان</h3>
+            <button class="ghost-button small" data-add-array="contact-address" type="button">إضافة سطر</button>
+          </div>
+          <div id="contact-address-editor" class="editor-list"></div>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <h2>استيراد / تصدير</h2>
+        <p class="helper-text">يمكنك تصدير البيانات الحالية كملف JSON أو لصق JSON هنا ثم استيراده.</p>
+        <textarea id="import-export-json" rows="10" placeholder="ألصق JSON هنا للاستيراد"></textarea>
+        <div class="header-actions import-actions">
+          <button class="ghost-button" id="fill-export-button" type="button">عرض JSON الحالي</button>
+          <button class="primary-button" id="import-button" type="button">استيراد JSON</button>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <div class="block-header">
+          <h2>الطلبات الواردة</h2>
+          <button class="ghost-button small" id="refresh-orders-button" type="button">تحديث الطلبات</button>
+        </div>
+        <div id="orders-list" class="orders-list"></div>
+      </section>
+    </main>
+
+    <div id="admin-status" class="admin-status" hidden></div>
+
+    <script src="content-manager.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>
