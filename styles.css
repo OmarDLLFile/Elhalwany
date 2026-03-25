@@ -286,6 +286,25 @@ body.theme-dark .section-label {
   transition: color 0.2s ease;
 }
 
+.cart-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cart-nav-link strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  min-height: 1.7rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #112319;
+  font-size: 0.82rem;
+}
+
 .lang-toggle {
   min-height: 42px;
   padding: 0.65rem 0.95rem;
@@ -559,6 +578,128 @@ body.theme-dark .order {
   gap: 2rem;
 }
 
+.cart-panel {
+  margin-top: 1.5rem;
+  padding: 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+}
+
+.cart-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cart-panel-header strong {
+  display: block;
+  font-size: 1.15rem;
+}
+
+.cart-panel-header p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.cart-clear-button {
+  min-height: 42px;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.cart-empty {
+  margin: 1rem 0 0;
+  color: var(--muted);
+}
+
+.cart-items {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.cart-item {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.cart-item img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.cart-item strong {
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.cart-item span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.cart-item-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cart-item-controls button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.cart-item-remove {
+  min-height: 38px;
+  padding: 0.55rem 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(203, 157, 62, 0.12);
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.cart-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.cart-summary strong {
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+.cart-checkout-button {
+  width: 100%;
+  margin-top: 1rem;
+}
+
 .order-form {
   padding: 1.5rem;
   border: 1px solid var(--border);
@@ -603,6 +744,20 @@ body.theme-dark .form-two-col input,
 body.theme-dark .form-two-col textarea,
 body.theme-dark .form-two-col select {
   border-color: rgba(203, 157, 62, 0.14);
+}
+
+body.theme-dark .cart-item {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body.theme-dark .cart-clear-button,
+body.theme-dark .cart-item-controls button {
+  border-color: rgba(203, 157, 62, 0.16);
+}
+
+body.theme-dark .cart-item-remove {
+  background: rgba(203, 157, 62, 0.1);
+  color: #f2d79f;
 }
 
 body.is-ltr .section-copy,
@@ -684,6 +839,16 @@ body.theme-dark .testimonial-card:hover {
   min-height: 44px;
   padding: 0.75rem 1rem;
   font-size: 0.92rem;
+}
+
+.product-actions .button-secondary {
+  color: var(--primary);
+  border-color: rgba(15, 75, 56, 0.16);
+}
+
+body.theme-dark .product-actions .button-secondary {
+  color: #f0f6f2;
+  border-color: rgba(203, 157, 62, 0.18);
 }
 
 .product-link {
@@ -1016,6 +1181,9 @@ body.theme-dark .page-backdrop {
 }
 
 .modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-top: 1.3rem;
 }
 
@@ -1172,6 +1340,14 @@ body.theme-dark .lightbox-dialog {
   .product-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .cart-item {
+    grid-template-columns: auto 1fr;
+  }
+
+  .cart-item-remove {
+    grid-column: 1 / -1;
   }
 
   .footer-brand {

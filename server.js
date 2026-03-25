@@ -273,6 +273,17 @@ function sanitizeContentPayload(value) {
 }
 
 function sanitizeOrderPayload(body) {
+  const items = Array.isArray(body.items)
+    ? body.items
+        .map((item) => ({
+          productIndex: Number(item.productIndex),
+          name: sanitizeText(item.name, 120),
+          quantity: Math.max(1, Number(item.quantity) || 1),
+          image: isAllowedUrl(item.image) ? item.image.trim() : "",
+        }))
+        .filter((item) => Number.isInteger(item.productIndex) && item.productIndex >= 0 && item.name)
+    : [];
+
   const order = {
     firstName: sanitizeText(body.firstName),
     lastName: sanitizeText(body.lastName),
@@ -283,6 +294,7 @@ function sanitizeOrderPayload(body) {
     governorate: sanitizeText(body.governorate, 80),
     paymentMethod: sanitizeText(body.paymentMethod, 40),
     notes: sanitizeText(body.notes || "", MAX_NOTES_LENGTH),
+    items,
   };
 
   const requiredFields = [
@@ -303,6 +315,10 @@ function sanitizeOrderPayload(body) {
 
   if (!ALLOWED_PAYMENT_METHODS.has(order.paymentMethod)) {
     throw new Error("Invalid payment method");
+  }
+
+  if (order.items.length === 0) {
+    throw new Error("Cart is empty");
   }
 
   return order;

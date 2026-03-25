@@ -358,6 +358,7 @@ async function loadOrders() {
               <div><strong>Governorate</strong><span>${order.governorate}</span></div>
               <div><strong>Payment</strong><span>${order.paymentMethod}</span></div>
               <div><strong>Created</strong><span>${new Date(order.createdAt).toLocaleString()}</span></div>
+              <div class="full"><strong>Items</strong><span>${Array.isArray(order.items) && order.items.length > 0 ? order.items.map((item) => `${item.name} x${item.quantity}`).join(" | ") : "-"}</span></div>
               <div class="full"><strong>Notes</strong><span>${order.notes || "-"}</span></div>
             </div>
           </article>

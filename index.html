@@ -69,6 +69,7 @@
           <a href="#products" id="nav-products-label">المنتجات</a>
           <a href="#why-us" id="nav-why-label">لماذا نحن</a>
           <a href="#gallery" id="nav-gallery-label">المعرض</a>
+          <a class="cart-nav-link" href="#order" id="nav-cart-link"><span id="nav-cart-label">السلة</span><strong id="nav-cart-count">0</strong></a>
           <a href="#order" id="nav-order-section-label">الطلب</a>
           <a href="#contact" id="nav-contact-label">تواصل</a>
           <a
@@ -213,6 +214,25 @@
               "Visa" أو "Credit Card" هنا هو تفضيل للدفع فقط وليس بوابة دفع
               إلكترونية مكتملة بعد.
             </p>
+
+            <div class="cart-panel" id="cart-panel">
+              <div class="cart-panel-header">
+                <div>
+                  <strong id="cart-title">سلة الطلب</strong>
+                  <p id="cart-subtitle">أضف الأصناف ثم راجعها قبل إرسال الطلب.</p>
+                </div>
+                <button class="cart-clear-button" id="cart-clear-button" type="button">تفريغ السلة</button>
+              </div>
+              <p class="cart-empty" id="cart-empty">السلة فارغة حالياً. اختر من المنتجات بالأعلى.</p>
+              <div class="cart-items" id="cart-items"></div>
+              <div class="cart-summary">
+                <span id="cart-total-label">إجمالي القطع</span>
+                <strong id="cart-total-count">0</strong>
+              </div>
+              <a class="button button-secondary cart-checkout-button" href="#order-form" id="cart-checkout-link">
+                <span id="cart-checkout-label">إكمال الطلب</span>
+              </a>
+            </div>
           </div>
 
           <form class="order-form reveal" id="order-form">
@@ -351,14 +371,15 @@
         <div class="modal-media">
           <img id="product-modal-image" src="" alt="" decoding="async" />
         </div>
-        <div class="modal-copy">
-          <span class="section-label">تفاصيل المنتج</span>
-          <h3 id="product-modal-title"></h3>
-          <p id="product-modal-description"></p>
-          <div class="modal-actions">
-            <a
-              class="button"
-              id="product-modal-whatsapp"
+          <div class="modal-copy">
+            <span class="section-label">تفاصيل المنتج</span>
+            <h3 id="product-modal-title"></h3>
+            <p id="product-modal-description"></p>
+            <div class="modal-actions">
+              <button class="button button-secondary" id="product-modal-add-to-cart" type="button">أضف إلى السلة</button>
+              <a
+                class="button"
+                id="product-modal-whatsapp"
               href="https://wa.me/201061162947"
               target="_blank"
               rel="noopener noreferrer"

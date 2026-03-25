@@ -11,6 +11,7 @@ const productModalTitle = document.querySelector("#product-modal-title");
 const productModalDescription = document.querySelector("#product-modal-description");
 const productModalImage = document.querySelector("#product-modal-image");
 const productModalWhatsapp = document.querySelector("#product-modal-whatsapp");
+const productModalAddToCart = document.querySelector("#product-modal-add-to-cart");
 const galleryLightbox = document.querySelector("#gallery-lightbox");
 const lightboxImage = document.querySelector("#lightbox-image");
 const orderForm = document.querySelector("#order-form");
@@ -19,9 +20,15 @@ const orderGovernorate = document.querySelector("#order-governorate");
 const orderStatus = document.querySelector("#order-form-status");
 const langToggle = document.querySelector("#lang-toggle");
 const themeToggle = document.querySelector("#theme-toggle");
+const cartItemsContainer = document.querySelector("#cart-items");
+const cartEmptyState = document.querySelector("#cart-empty");
+const cartTotalCount = document.querySelector("#cart-total-count");
+const cartClearButton = document.querySelector("#cart-clear-button");
+const navCartCount = document.querySelector("#nav-cart-count");
 
 const LANGUAGE_KEY = "alhelwany-site-language";
 const THEME_KEY = "alhelwany-site-theme";
+const CART_KEY = "alhelwany-site-cart";
 const systemThemeQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 let currentLanguage = window.localStorage.getItem(LANGUAGE_KEY) || "ar";
 const savedThemePreference = window.localStorage.getItem(THEME_KEY);
@@ -29,6 +36,7 @@ let currentTheme =
   savedThemePreference === "light" || savedThemePreference === "dark"
     ? savedThemePreference
     : "system";
+let cart = [];
 
 const translations = {
   ar: {
@@ -41,6 +49,7 @@ const translations = {
       products: "المنتجات",
       why: "لماذا نحن",
       gallery: "المعرض",
+      cart: "السلة",
       order: "الطلب",
       contact: "تواصل",
       toggle: "EN",
@@ -80,6 +89,7 @@ const translations = {
       label: "منتجاتنا",
       title: "تشكيلة مختارة بعناية",
       subtitle: "كل صنف مصمم ليقدّم توازن مثالي بين الطعم، القرمشة، والانتعاش.",
+      addToCart: "أضف إلى السلة",
       orderLabel: "اطلب الصنف",
       detailsLabel: "عرض التفاصيل",
       items: [
@@ -121,6 +131,16 @@ const translations = {
       label: "طلب جديد",
       title: "أرسل بيانات الطلب والدفع",
       text: 'املأ البيانات التالية وسنراجع الطلب من لوحة الإدارة. اختيار "Visa" أو "Credit Card" هنا هو تفضيل للدفع فقط وليس بوابة دفع إلكترونية مكتملة بعد.',
+      cartTitle: "سلة الطلب",
+      cartSubtitle: "أضف الأصناف ثم راجعها قبل إرسال الطلب.",
+      cartEmpty: "السلة فارغة حالياً. اختر من المنتجات بالأعلى.",
+      cartClear: "تفريغ السلة",
+      cartCheckout: "إكمال الطلب",
+      cartTotal: "إجمالي القطع",
+      cartQuantity: "الكمية",
+      cartRemove: "حذف",
+      cartRequired: "أضف صنفاً واحداً على الأقل إلى السلة قبل إرسال الطلب.",
+      addedToCart: "تمت إضافة الصنف إلى السلة.",
       firstName: "الاسم الأول",
       lastName: "اسم العائلة",
       thirdName: "الاسم الثالث",
@@ -168,6 +188,7 @@ const translations = {
       products: "Products",
       why: "Why Us",
       gallery: "Gallery",
+      cart: "Cart",
       order: "Order",
       contact: "Contact",
       toggle: "AR",
@@ -207,6 +228,7 @@ const translations = {
       label: "Our Products",
       title: "A carefully selected range",
       subtitle: "Each variety is designed to deliver the right balance of flavor, crunch, and freshness.",
+      addToCart: "Add to Cart",
       orderLabel: "Order Item",
       detailsLabel: "View Details",
       items: [
@@ -248,6 +270,16 @@ const translations = {
       label: "New Order",
       title: "Submit your order and payment preference",
       text: 'Fill in the details below and the admin will review your request. Choosing "Visa" or "Credit Card" here is only a payment preference and not a complete online payment gateway yet.',
+      cartTitle: "Your Cart",
+      cartSubtitle: "Add items, review them, then complete checkout.",
+      cartEmpty: "Your cart is empty. Add items from the products section.",
+      cartClear: "Clear Cart",
+      cartCheckout: "Proceed to Checkout",
+      cartTotal: "Total Items",
+      cartQuantity: "Quantity",
+      cartRemove: "Remove",
+      cartRequired: "Add at least one item to the cart before submitting the order.",
+      addedToCart: "Item added to cart.",
       firstName: "First Name",
       lastName: "Last Name",
       thirdName: "Third Name",
@@ -301,6 +333,143 @@ function getResolvedTheme() {
   }
 
   return currentTheme;
+}
+
+function loadCart() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(CART_KEY) || "[]");
+    cart = Array.isArray(stored)
+      ? stored
+          .map((item) => ({
+            productIndex: Number(item.productIndex),
+            quantity: Math.max(1, Number(item.quantity) || 1),
+          }))
+          .filter((item) => Number.isInteger(item.productIndex) && item.productIndex >= 0)
+      : [];
+  } catch (_error) {
+    cart = [];
+  }
+}
+
+function persistCart() {
+  window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
+}
+
+function getProductEntry(productIndex) {
+  const item = content?.products?.items?.[productIndex];
+  const localized = t().products.items[productIndex];
+  if (!item || !localized) {
+    return null;
+  }
+
+  return {
+    productIndex,
+    image: item.image,
+    name: localized[0],
+    shortDescription: localized[1],
+    longDescription: localized[2],
+  };
+}
+
+function getCartDetailedItems() {
+  return cart
+    .map((item) => {
+      const product = getProductEntry(item.productIndex);
+      if (!product) {
+        return null;
+      }
+
+      return {
+        ...product,
+        quantity: item.quantity,
+      };
+    })
+    .filter(Boolean);
+}
+
+function updateCartCount() {
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  if (cartTotalCount) {
+    cartTotalCount.textContent = String(totalItems);
+  }
+  if (navCartCount) {
+    navCartCount.textContent = String(totalItems);
+  }
+}
+
+function renderCart() {
+  if (!cartItemsContainer) {
+    return;
+  }
+
+  const detailedItems = getCartDetailedItems();
+  updateCartCount();
+
+  if (cartEmptyState) {
+    cartEmptyState.hidden = detailedItems.length > 0;
+  }
+
+  cartItemsContainer.innerHTML = detailedItems
+    .map(
+      (item) => `
+        <article class="cart-item" data-product-index="${item.productIndex}">
+          <img src="${item.image}" alt="${item.name}" loading="lazy" decoding="async" />
+          <div>
+            <strong>${item.name}</strong>
+            <span>${t().order.cartQuantity}: ${item.quantity}</span>
+          </div>
+          <div>
+            <div class="cart-item-controls">
+              <button type="button" data-cart-action="decrease" data-product-index="${item.productIndex}" aria-label="Decrease quantity">-</button>
+              <strong>${item.quantity}</strong>
+              <button type="button" data-cart-action="increase" data-product-index="${item.productIndex}" aria-label="Increase quantity">+</button>
+            </div>
+            <button class="cart-item-remove" type="button" data-cart-action="remove" data-product-index="${item.productIndex}">
+              ${t().order.cartRemove}
+            </button>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function addToCart(productIndex) {
+  const existing = cart.find((item) => item.productIndex === productIndex);
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({ productIndex, quantity: 1 });
+  }
+
+  persistCart();
+  renderCart();
+
+  if (orderStatus) {
+    orderStatus.textContent = t().order.addedToCart;
+    orderStatus.removeAttribute("hidden");
+  }
+}
+
+function updateCartItem(productIndex, nextQuantity) {
+  cart = cart
+    .map((item) => {
+      if (item.productIndex !== productIndex) {
+        return item;
+      }
+
+      return { ...item, quantity: nextQuantity };
+    })
+    .filter((item) => item.quantity > 0);
+
+  persistCart();
+  renderCart();
+}
+
+function clearCart() {
+  cart = [];
+  persistCart();
+  renderCart();
 }
 
 function applyLanguageDirection() {
@@ -369,6 +538,7 @@ function renderHero() {
   setText("nav-products-label", t().nav.products);
   setText("nav-why-label", t().nav.why);
   setText("nav-gallery-label", t().nav.gallery);
+  setText("nav-cart-label", t().nav.cart);
   setText("nav-order-section-label", t().nav.order);
   setText("nav-contact-label", t().nav.contact);
 
@@ -432,6 +602,7 @@ function renderProducts() {
       return `
         <article
           class="product-card reveal"
+          data-product-index="${index}"
           data-product-name="${localized[0]}"
           data-product-description="${localized[2]}"
           data-product-image="${item.image}"
@@ -442,6 +613,7 @@ function renderProducts() {
             <p>${localized[1]}</p>
             <div class="product-actions">
               <button class="button product-modal-trigger" type="button">${t().products.detailsLabel}</button>
+              <button class="button button-secondary product-add-to-cart" type="button" data-product-index="${index}">${t().products.addToCart}</button>
               <a class="product-link" href="${orderUrl}" target="_blank" rel="noopener noreferrer">${t().products.orderLabel}</a>
             </div>
           </div>
@@ -582,6 +754,12 @@ function renderOrderSection() {
   setText("order-label", t().order.label);
   setText("order-title", t().order.title);
   setText("order-text", t().order.text);
+  setText("cart-title", t().order.cartTitle);
+  setText("cart-subtitle", t().order.cartSubtitle);
+  setText("cart-empty", t().order.cartEmpty);
+  setText("cart-clear-button", t().order.cartClear);
+  setText("cart-total-label", t().order.cartTotal);
+  setText("cart-checkout-label", t().order.cartCheckout);
   setText("order-first-name-label", t().order.firstName);
   setText("order-last-name-label", t().order.lastName);
   setText("order-third-name-label", t().order.thirdName);
@@ -595,10 +773,13 @@ function renderOrderSection() {
   setText("payment-cod-option", t().order.paymentOptions.cod);
   setText("payment-visa-option", t().order.paymentOptions.visa);
   setText("payment-card-option", t().order.paymentOptions.card);
+  setText("product-modal-add-to-cart", t().products.addToCart);
   const notes = byId("order-notes");
   if (notes) {
     notes.placeholder = t().order.notesPlaceholder;
   }
+
+  renderCart();
 }
 
 function populateCountries() {
@@ -754,6 +935,7 @@ function setupProductModal() {
         return;
       }
 
+      const productIndex = Number(card.dataset.productIndex || -1);
       const name = card.dataset.productName || "";
       const description = card.dataset.productDescription || "";
       const image = card.dataset.productImage || "";
@@ -777,10 +959,75 @@ function setupProductModal() {
       if (productModalWhatsapp) {
         productModalWhatsapp.href = waUrl;
       }
+      if (productModalAddToCart) {
+        productModalAddToCart.dataset.productIndex = String(productIndex);
+      }
 
       productModal?.removeAttribute("hidden");
       openOverlay();
     });
+  });
+}
+
+function setupCartActions() {
+  document.querySelectorAll(".product-add-to-cart").forEach((button) => {
+    if (button.dataset.bound === "true") {
+      return;
+    }
+
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => {
+      const productIndex = Number(button.dataset.productIndex || -1);
+      if (productIndex < 0) {
+        return;
+      }
+
+      addToCart(productIndex);
+    });
+  });
+
+  cartItemsContainer?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const action = target.dataset.cartAction;
+    const productIndex = Number(target.dataset.productIndex || -1);
+    if (!action || productIndex < 0) {
+      return;
+    }
+
+    const existing = cart.find((item) => item.productIndex === productIndex);
+    if (!existing) {
+      return;
+    }
+
+    if (action === "increase") {
+      updateCartItem(productIndex, existing.quantity + 1);
+      return;
+    }
+
+    if (action === "decrease") {
+      updateCartItem(productIndex, existing.quantity - 1);
+      return;
+    }
+
+    if (action === "remove") {
+      updateCartItem(productIndex, 0);
+    }
+  });
+
+  cartClearButton?.addEventListener("click", clearCart);
+
+  productModalAddToCart?.addEventListener("click", () => {
+    const productIndex = Number(productModalAddToCart.dataset.productIndex || -1);
+    if (productIndex < 0) {
+      return;
+    }
+
+    addToCart(productIndex);
+    closeModal(productModal);
   });
 }
 
@@ -847,8 +1094,21 @@ function setupOrderForm() {
       return;
     }
 
+     const detailedItems = getCartDetailedItems();
+     if (detailedItems.length === 0) {
+      orderStatus.textContent = t().order.cartRequired;
+      orderStatus.removeAttribute("hidden");
+      return;
+    }
+
     const formData = new FormData(orderForm);
     const payload = Object.fromEntries(formData.entries());
+    payload.items = detailedItems.map((item) => ({
+      productIndex: item.productIndex,
+      name: item.name,
+      quantity: item.quantity,
+      image: item.image,
+    }));
 
     try {
       const response = await fetch("/api/orders", {
@@ -866,6 +1126,7 @@ function setupOrderForm() {
 
       orderForm.reset();
       populateCountries();
+      clearCart();
       orderStatus.textContent = t().order.success;
       orderStatus.removeAttribute("hidden");
     } catch (error) {
@@ -884,6 +1145,7 @@ function setupLanguageToggle() {
     setupRevealAnimations();
     setupProductModal();
     setupGalleryLightbox();
+    setupCartActions();
   });
 }
 
@@ -910,6 +1172,7 @@ function setupThemeToggle() {
 }
 
 async function init() {
+  loadCart();
   content = await contentManager.loadContent();
   applyContent();
   applyTheme();
@@ -918,6 +1181,7 @@ async function init() {
   setupNavigation();
   setupProductModal();
   setupGalleryLightbox();
+  setupCartActions();
   setupCloseActions();
   setupOrderForm();
   setupLanguageToggle();
