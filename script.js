@@ -1,5 +1,6 @@
 const contentManager = window.SiteContentManager;
 let content = null;
+let revealObserver = null;
 
 const navToggle = document.querySelector(".nav-toggle");
 const navMenu = document.querySelector(".nav-menu");
@@ -17,9 +18,17 @@ const orderCountry = document.querySelector("#order-country");
 const orderGovernorate = document.querySelector("#order-governorate");
 const orderStatus = document.querySelector("#order-form-status");
 const langToggle = document.querySelector("#lang-toggle");
+const themeToggle = document.querySelector("#theme-toggle");
 
 const LANGUAGE_KEY = "alhelwany-site-language";
+const THEME_KEY = "alhelwany-site-theme";
+const systemThemeQuery = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 let currentLanguage = window.localStorage.getItem(LANGUAGE_KEY) || "ar";
+const savedThemePreference = window.localStorage.getItem(THEME_KEY);
+let currentTheme =
+  savedThemePreference === "light" || savedThemePreference === "dark"
+    ? savedThemePreference
+    : "system";
 
 const translations = {
   ar: {
@@ -35,6 +44,8 @@ const translations = {
       order: "الطلب",
       contact: "تواصل",
       toggle: "EN",
+      themeLight: "فاتح",
+      themeDark: "داكن",
     },
     hero: {
       eyebrow: "نكهة مصرية أصيلة بلمسة عصرية",
@@ -160,6 +171,8 @@ const translations = {
       order: "Order",
       contact: "Contact",
       toggle: "AR",
+      themeLight: "Light",
+      themeDark: "Dark",
     },
     hero: {
       eyebrow: "Authentic Egyptian flavor with a modern premium touch",
@@ -282,6 +295,14 @@ function t() {
   return translations[currentLanguage];
 }
 
+function getResolvedTheme() {
+  if (currentTheme === "system") {
+    return systemThemeQuery?.matches ? "dark" : "light";
+  }
+
+  return currentTheme;
+}
+
 function applyLanguageDirection() {
   const isArabic = currentLanguage === "ar";
   document.documentElement.lang = isArabic ? "ar" : "en";
@@ -294,6 +315,18 @@ function applyLanguageDirection() {
   }
   if (langToggle) {
     langToggle.textContent = t().nav.toggle;
+  }
+  if (themeToggle) {
+    themeToggle.textContent =
+      getResolvedTheme() === "dark" ? t().nav.themeLight : t().nav.themeDark;
+  }
+}
+
+function applyTheme() {
+  document.body.classList.toggle("theme-dark", getResolvedTheme() === "dark");
+  if (themeToggle) {
+    themeToggle.textContent =
+      getResolvedTheme() === "dark" ? t().nav.themeLight : t().nav.themeDark;
   }
 }
 
@@ -631,8 +664,12 @@ function closeModal(modal) {
 }
 
 function setupRevealAnimations() {
+  if (revealObserver) {
+    revealObserver.disconnect();
+  }
+
   const revealItems = document.querySelectorAll(".reveal");
-  const observer = new IntersectionObserver(
+  revealObserver = new IntersectionObserver(
     (entries, obs) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) {
@@ -649,7 +686,7 @@ function setupRevealAnimations() {
     }
   );
 
-  revealItems.forEach((item) => observer.observe(item));
+  revealItems.forEach((item) => revealObserver.observe(item));
 }
 
 function setupSectionHighlighting() {
@@ -844,14 +881,38 @@ function setupLanguageToggle() {
     window.localStorage.setItem(LANGUAGE_KEY, currentLanguage);
     applyContent();
     populateCountries();
+    setupRevealAnimations();
     setupProductModal();
     setupGalleryLightbox();
+  });
+}
+
+function setupThemeToggle() {
+  applyTheme();
+
+  themeToggle?.addEventListener("click", () => {
+    currentTheme = getResolvedTheme() === "dark" ? "light" : "dark";
+    window.localStorage.setItem(THEME_KEY, currentTheme);
+    applyTheme();
+  });
+
+  if (!systemThemeQuery) {
+    return;
+  }
+
+  systemThemeQuery.addEventListener("change", () => {
+    if (currentTheme !== "system") {
+      return;
+    }
+
+    applyTheme();
   });
 }
 
 async function init() {
   content = await contentManager.loadContent();
   applyContent();
+  applyTheme();
   setupRevealAnimations();
   setupSectionHighlighting();
   setupNavigation();
@@ -860,6 +921,7 @@ async function init() {
   setupCloseActions();
   setupOrderForm();
   setupLanguageToggle();
+  setupThemeToggle();
 }
 
 init();
