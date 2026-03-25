@@ -39,7 +39,7 @@
       rel="noopener noreferrer"
       aria-label="تواصل عبر واتساب"
     >
-      <span>واتساب</span>
+      <span id="floating-whatsapp-label">واتساب</span>
     </a>
 
     <header class="site-header">
@@ -65,18 +65,19 @@
         </button>
 
         <div class="nav-menu" id="nav-menu">
-          <a href="#about">من نحن</a>
-          <a href="#products">المنتجات</a>
-          <a href="#why-us">لماذا نحن</a>
-          <a href="#gallery">المعرض</a>
-          <a href="#order">الطلب</a>
-          <a href="#contact">تواصل</a>
+          <a href="#about" id="nav-about-label">من نحن</a>
+          <a href="#products" id="nav-products-label">المنتجات</a>
+          <a href="#why-us" id="nav-why-label">لماذا نحن</a>
+          <a href="#gallery" id="nav-gallery-label">المعرض</a>
+          <a href="#order" id="nav-order-section-label">الطلب</a>
+          <a href="#contact" id="nav-contact-label">تواصل</a>
           <a
             class="button button-nav"
             id="nav-order-link"
             href="#order"
             ><span id="nav-order-label">اطلب الآن</span></a
           >
+          <button class="lang-toggle" id="lang-toggle" type="button" aria-label="Switch language">EN</button>
         </div>
       </nav>
     </header>
@@ -204,9 +205,9 @@
       <section class="order section" id="order">
         <div class="container order-grid">
           <div class="section-copy reveal">
-            <span class="section-label">طلب جديد</span>
-            <h2>أرسل بيانات الطلب والدفع</h2>
-            <p>
+            <span class="section-label" id="order-label">طلب جديد</span>
+            <h2 id="order-title">أرسل بيانات الطلب والدفع</h2>
+            <p id="order-text">
               املأ البيانات التالية وسنراجع الطلب من لوحة الإدارة. اختيار
               "Visa" أو "Credit Card" هنا هو تفضيل للدفع فقط وليس بوابة دفع
               إلكترونية مكتملة بعد.
@@ -216,47 +217,47 @@
           <form class="order-form reveal" id="order-form">
             <div class="form-two-col">
               <label>
-                <span>First Name</span>
+                <span id="order-first-name-label">First Name</span>
                 <input id="order-first-name" name="firstName" type="text" required />
               </label>
               <label>
-                <span>Last Name</span>
+                <span id="order-last-name-label">Last Name</span>
                 <input id="order-last-name" name="lastName" type="text" required />
               </label>
               <label>
-                <span>Third Name</span>
+                <span id="order-third-name-label">Third Name</span>
                 <input id="order-third-name" name="thirdName" type="text" required />
               </label>
               <label>
-                <span>Phone Number</span>
+                <span id="order-phone-label">Phone Number</span>
                 <input id="order-phone" name="phone" type="tel" required />
               </label>
               <label>
-                <span>WhatsApp Number</span>
+                <span id="order-whatsapp-label">WhatsApp Number</span>
                 <input id="order-whatsapp" name="whatsapp" type="tel" required />
               </label>
               <label>
-                <span>Country</span>
+                <span id="order-country-label">Country</span>
                 <select id="order-country" name="country" required></select>
               </label>
               <label>
-                <span>Governorate</span>
+                <span id="order-governorate-label">Governorate</span>
                 <select id="order-governorate" name="governorate" required></select>
               </label>
               <label>
-                <span>Payment Method</span>
+                <span id="order-payment-method-label">Payment Method</span>
                 <select id="order-payment-method" name="paymentMethod" required>
-                  <option value="Cash on Delivery">Cash on Delivery</option>
-                  <option value="Visa">Visa</option>
-                  <option value="Credit Card">Credit Card</option>
+                  <option id="payment-cod-option" value="Cash on Delivery">Cash on Delivery</option>
+                  <option id="payment-visa-option" value="Visa">Visa</option>
+                  <option id="payment-card-option" value="Credit Card">Credit Card</option>
                 </select>
               </label>
               <label class="full">
-                <span>Notes</span>
+                <span id="order-notes-label">Notes</span>
                 <textarea id="order-notes" name="notes" rows="4" placeholder="Optional order notes"></textarea>
               </label>
             </div>
-            <button class="button" type="submit">Submit Order</button>
+            <button class="button" id="order-submit-label" type="submit">Submit Order</button>
             <div id="order-form-status" class="order-form-status" hidden></div>
           </form>
         </div>

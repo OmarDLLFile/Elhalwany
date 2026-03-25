@@ -35,6 +35,10 @@ body {
   padding-bottom: 0;
 }
 
+body.is-ltr {
+  direction: ltr;
+}
+
 body.is-locked {
   overflow: hidden;
 }
@@ -229,6 +233,16 @@ select {
   color: #fff;
   font-size: 0.95rem;
   transition: color 0.2s ease;
+}
+
+.lang-toggle {
+  min-height: 42px;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
 }
 
 .nav-menu a:hover,
@@ -492,6 +506,17 @@ select {
   border-radius: 16px;
   background: #fff;
   color: var(--text);
+}
+
+body.is-ltr .section-copy,
+body.is-ltr .section-heading,
+body.is-ltr .product-card-body,
+body.is-ltr .feature-card,
+body.is-ltr .testimonial-card,
+body.is-ltr .contact-card,
+body.is-ltr .order-form,
+body.is-ltr .modal-copy {
+  text-align: left;
 }
 
 .order-form-status {
