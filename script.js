@@ -357,17 +357,16 @@ function persistCart() {
 
 function getProductEntry(productIndex) {
   const item = content?.products?.items?.[productIndex];
-  const localized = t().products.items[productIndex];
-  if (!item || !localized) {
+  if (!item) {
     return null;
   }
 
   return {
     productIndex,
     image: item.image,
-    name: localized[0],
-    shortDescription: localized[1],
-    longDescription: localized[2],
+    name: item.name,
+    shortDescription: item.description,
+    longDescription: item.modalDescription,
   };
 }
 
@@ -524,15 +523,15 @@ function setLink(id, href) {
 }
 
 function renderHero() {
-  setText("nav-brand-name", t().hero.title);
-  setText("nav-brand-tagline", t().hero.tagline);
-  setText("hero-eyebrow", t().hero.eyebrow);
-  setText("hero-title", t().hero.title);
-  setText("hero-tagline", t().hero.tagline);
-  setText("hero-text", t().hero.text);
-  setText("nav-order-label", t().hero.primaryCta);
-  setText("hero-primary-label", t().hero.primaryCta);
-  setText("hero-secondary-label", t().hero.secondaryCta);
+  setText("nav-brand-name", content.brand.name);
+  setText("nav-brand-tagline", content.brand.tagline);
+  setText("hero-eyebrow", content.hero.eyebrow);
+  setText("hero-title", content.hero.title);
+  setText("hero-tagline", content.hero.tagline);
+  setText("hero-text", content.hero.text);
+  setText("nav-order-label", content.hero.primaryCta);
+  setText("hero-primary-label", content.hero.primaryCta);
+  setText("hero-secondary-label", content.hero.secondaryCta);
   setText("floating-whatsapp-label", t().floatingWhatsapp);
   setText("nav-about-label", t().nav.about);
   setText("nav-products-label", t().nav.products);
@@ -548,14 +547,14 @@ function renderHero() {
 
   const trustStrip = byId("hero-trust-strip");
   if (trustStrip) {
-    trustStrip.innerHTML = t().hero.trust
+    trustStrip.innerHTML = content.hero.trust
       .map((item) => `<span>${item}</span>`)
       .join("");
   }
 
   const metrics = byId("hero-metrics");
   if (metrics) {
-    metrics.innerHTML = t().hero.metrics
+    metrics.innerHTML = content.hero.metrics
       .map(
         (item) => `
           <div>
@@ -569,20 +568,20 @@ function renderHero() {
 }
 
 function renderAbout() {
-  setText("about-label", t().about.label);
-  setText("about-title", t().about.title);
-  setText("about-text-1", t().about.text1);
-  setText("about-text-2", t().about.text2);
-  setText("about-experience-value", t().about.experienceValue);
-  setText("about-experience-title", t().about.experienceTitle);
-  setText("about-experience-text", t().about.experienceText);
+  setText("about-label", content.about.label);
+  setText("about-title", content.about.title);
+  setText("about-text-1", content.about.text1);
+  setText("about-text-2", content.about.text2);
+  setText("about-experience-value", content.about.experienceValue);
+  setText("about-experience-title", content.about.experienceTitle);
+  setText("about-experience-text", content.about.experienceText);
   setImage("about-image", content.about.image, content.about.title);
 }
 
 function renderProducts() {
-  setText("products-label", t().products.label);
-  setText("products-title", t().products.title);
-  setText("products-subtitle", t().products.subtitle);
+  setText("products-label", content.products.label);
+  setText("products-title", content.products.title);
+  setText("products-subtitle", content.products.subtitle);
 
   const grid = byId("products-grid");
   if (!grid) {
@@ -591,30 +590,29 @@ function renderProducts() {
 
   grid.innerHTML = content.products.items
     .map((item, index) => {
-      const localized = t().products.items[index];
       const orderUrl = contentManager.buildWhatsAppUrl(
         content.contact.whatsappWaNumber,
         currentLanguage === "ar"
-          ? `مرحباً، أريد طلب صنف ${localized[0]} من ${t().hero.title}.`
-          : `Hello, I would like to order ${localized[0]} from ${t().hero.title}.`
+          ? `مرحباً، أريد طلب صنف ${item.name} من ${content.brand.name}.`
+          : `Hello, I would like to order ${item.name} from ${content.brand.name}.`
       );
 
       return `
         <article
           class="product-card reveal"
           data-product-index="${index}"
-          data-product-name="${localized[0]}"
-          data-product-description="${localized[2]}"
+          data-product-name="${item.name}"
+          data-product-description="${item.modalDescription}"
           data-product-image="${item.image}"
         >
-          <img src="${item.image}" alt="${localized[0]}" loading="lazy" decoding="async" />
+          <img src="${item.image}" alt="${item.name}" loading="lazy" decoding="async" />
           <div class="product-card-body">
-            <h3>${localized[0]}</h3>
-            <p>${localized[1]}</p>
+            <h3>${item.name}</h3>
+            <p>${item.description}</p>
             <div class="product-actions">
-              <button class="button product-modal-trigger" type="button">${t().products.detailsLabel}</button>
+              <button class="button product-modal-trigger" type="button">${content.products.detailsLabel}</button>
               <button class="button button-secondary product-add-to-cart" type="button" data-product-index="${index}">${t().products.addToCart}</button>
-              <a class="product-link" href="${orderUrl}" target="_blank" rel="noopener noreferrer">${t().products.orderLabel}</a>
+              <a class="product-link" href="${orderUrl}" target="_blank" rel="noopener noreferrer">${content.products.orderLabel}</a>
             </div>
           </div>
         </article>
@@ -624,17 +622,17 @@ function renderProducts() {
 }
 
 function renderWhyUs() {
-  setText("why-label", t().whyUs.label);
-  setText("why-title", t().whyUs.title);
+  setText("why-label", content.whyUs.label);
+  setText("why-title", content.whyUs.title);
 
   const featuresGrid = byId("features-grid");
   if (featuresGrid) {
-    featuresGrid.innerHTML = t().whyUs.features
+    featuresGrid.innerHTML = content.whyUs.features
       .map(
         (item) => `
           <article class="feature-card reveal">
-            <h3>${item[0]}</h3>
-            <p>${item[1]}</p>
+            <h3>${item.title}</h3>
+            <p>${item.text}</p>
           </article>
         `
       )
@@ -643,12 +641,12 @@ function renderWhyUs() {
 
   const trustBand = byId("trust-band");
   if (trustBand) {
-    trustBand.innerHTML = t().whyUs.trust
+    trustBand.innerHTML = content.whyUs.trust
       .map(
         (item) => `
           <div class="trust-item">
-            <strong>${item[0]}</strong>
-            <span>${item[1]}</span>
+            <strong>${item.title}</strong>
+            <span>${item.text}</span>
           </div>
         `
       )
@@ -657,8 +655,8 @@ function renderWhyUs() {
 }
 
 function renderGallery() {
-  setText("gallery-label", t().gallery.label);
-  setText("gallery-title", t().gallery.title);
+  setText("gallery-label", content.gallery.label);
+  setText("gallery-title", content.gallery.title);
 
   const grid = byId("gallery-grid");
   if (!grid) {
@@ -678,21 +676,21 @@ function renderGallery() {
 }
 
 function renderTestimonials() {
-  setText("testimonials-label", t().testimonials.label);
-  setText("testimonials-title", t().testimonials.title);
-  setText("testimonials-subtitle", t().testimonials.subtitle);
+  setText("testimonials-label", content.testimonials.label);
+  setText("testimonials-title", content.testimonials.title);
+  setText("testimonials-subtitle", content.testimonials.subtitle);
 
   const grid = byId("testimonials-grid");
   if (!grid) {
     return;
   }
 
-  grid.innerHTML = t().testimonials.items
+  grid.innerHTML = content.testimonials.items
     .map(
       (item) => `
         <article class="testimonial-card reveal">
-          <strong>${item[0]}</strong>
-          <p>${item[1]}</p>
+          <strong>${item.title}</strong>
+          <p>${item.text}</p>
         </article>
       `
     )
@@ -700,18 +698,18 @@ function renderTestimonials() {
 }
 
 function renderContact() {
-  setText("contact-label", t().contact.label);
-  setText("contact-title", t().contact.title);
-  setText("contact-text", t().contact.text);
-  setText("contact-whatsapp-label", t().contact.whatsappLabel);
+  setText("contact-label", content.contact.label);
+  setText("contact-title", content.contact.title);
+  setText("contact-text", content.contact.text);
+  setText("contact-whatsapp-label", content.contact.whatsappLabel);
   setText("contact-whatsapp-display", content.contact.whatsappDisplay);
   setText("contact-phone-display", content.contact.phoneDisplay);
-  setText("contact-map-label", t().contact.mapLabel);
-  setText("footer-brand-name", t().hero.title);
+  setText("contact-map-label", content.contact.mapLabel);
+  setText("footer-brand-name", content.brand.name);
   setText("footer-summary", content.brand.footerSummary);
   setText("footer-phone-display", content.contact.phoneDisplay);
-  setText("footer-whatsapp-label", t().contact.footerWhatsappLabel);
-  setText("footer-map-label", t().contact.footerMapLabel);
+  setText("footer-whatsapp-label", content.contact.footerWhatsappLabel);
+  setText("footer-map-label", content.contact.footerMapLabel);
   setText("mobile-call-link", t().mobileCta.call);
   setText("mobile-whatsapp-link", t().mobileCta.whatsapp);
   setText("mobile-map-link", t().mobileCta.map);
@@ -752,8 +750,8 @@ function applyContent() {
 
 function renderOrderSection() {
   setText("order-label", t().order.label);
-  setText("order-title", t().order.title);
-  setText("order-text", t().order.text);
+  setText("order-title", content.order?.title || t().order.title);
+  setText("order-text", content.order?.text || t().order.text);
   setText("cart-title", t().order.cartTitle);
   setText("cart-subtitle", t().order.cartSubtitle);
   setText("cart-empty", t().order.cartEmpty);
@@ -942,8 +940,8 @@ function setupProductModal() {
       const waUrl = contentManager.buildWhatsAppUrl(
         content.contact.whatsappWaNumber,
         currentLanguage === "ar"
-          ? `مرحباً، أريد طلب صنف ${name} من ${t().hero.title}.`
-          : `Hello, I would like to order ${name} from ${t().hero.title}.`
+          ? `مرحباً، أريد طلب صنف ${name} من ${content.brand.name}.`
+          : `Hello, I would like to order ${name} from ${content.brand.name}.`
       );
 
       if (productModalTitle) {
