@@ -239,6 +239,7 @@
   async function saveContent(content) {
     const response = await fetch("/api/content", {
       method: "PUT",
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json",
       },
@@ -261,7 +262,7 @@
   }
 
   async function resetContent() {
-    const response = await fetch("/api/content/reset", { method: "POST" });
+    const response = await fetch("/api/content/reset", { method: "POST", credentials: "same-origin" });
     if (!response.ok) {
       let message = "Failed to reset content";
       try {

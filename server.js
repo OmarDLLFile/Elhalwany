@@ -222,7 +222,7 @@ function isAllowedUrl(value) {
 
   const trimmed = value.trim();
   if (!trimmed) {
-    return false;
+    return true;
   }
 
   if (/^data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+$/.test(trimmed)) {

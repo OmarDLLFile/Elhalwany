@@ -101,15 +101,35 @@ function getValue(id) {
   return byId(id)?.value || "";
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      case "'":
+        return "&#39;";
+      default:
+        return char;
+    }
+  });
+}
+
 function createInput(field, value, arrayKey, index) {
   const wrapperClass = field.full ? "full" : "";
   const safeValue = typeof value === "string" ? value : "";
+  const escapedValue = escapeHtml(safeValue);
 
   if (field.type === "textarea") {
     return `
       <label class="${wrapperClass}">
         <span>${field.label}</span>
-        <textarea data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" rows="4">${safeValue}</textarea>
+        <textarea data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" rows="4">${escapedValue}</textarea>
       </label>
     `;
   }
@@ -118,7 +138,7 @@ function createInput(field, value, arrayKey, index) {
     return `
       <label class="${wrapperClass}">
         <span>${field.label}</span>
-        <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${safeValue}" />
+        <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${escapedValue}" />
         <input class="file-input array-file-input" data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="file" accept="image/*" />
       </label>
     `;
@@ -127,7 +147,7 @@ function createInput(field, value, arrayKey, index) {
   return `
     <label class="${wrapperClass}">
       <span>${field.label}</span>
-      <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${safeValue}" />
+      <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${escapedValue}" />
     </label>
   `;
 }
@@ -500,7 +520,7 @@ function wireMainActions() {
         window.location.href = "/login.html";
         return;
       }
-      showStatus("فشل حفظ البيانات.");
+      showStatus(error.message || "فشل حفظ البيانات.");
     }
   });
 
@@ -514,7 +534,7 @@ function wireMainActions() {
         window.location.href = "/login.html";
         return;
       }
-      showStatus("فشل استعادة القيم الافتراضية.");
+      showStatus(error.message || "فشل استعادة القيم الافتراضية.");
     }
   });
 
@@ -529,7 +549,7 @@ function wireMainActions() {
         window.location.href = "/login.html";
         return;
       }
-      showStatus("فشل تصدير البيانات.");
+      showStatus(error.message || "فشل تصدير البيانات.");
     }
   });
 
@@ -548,8 +568,8 @@ function wireMainActions() {
       currentContent = await manager.importContent(text);
       populateForm();
       showStatus("تم استيراد البيانات بنجاح.");
-    } catch (_error) {
-      showStatus("فشل استيراد JSON. تأكد من صحة التنسيق.");
+    } catch (error) {
+      showStatus(error.message || "فشل استيراد JSON. تأكد من صحة التنسيق.");
     }
   });
 
