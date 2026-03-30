@@ -229,7 +229,12 @@ function isAllowedUrl(value) {
     return true;
   }
 
-  if (trimmed.startsWith("/") || trimmed.startsWith("./") || trimmed.startsWith("../")) {
+  if (
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("./") ||
+    trimmed.startsWith("../") ||
+    /^[a-zA-Z0-9_./-]+\.(png|jpe?g|webp|svg|gif|ico)$/i.test(trimmed)
+  ) {
     return true;
   }
 
