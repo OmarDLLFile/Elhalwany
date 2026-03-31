@@ -21,6 +21,13 @@
           <p>عدّل النصوص والصور ثم اضغط حفظ. الصفحة الرئيسية ستقرأ البيانات الجديدة مباشرة من التخزين المحلي للمتصفح.</p>
         </div>
         <div class="header-actions">
+          <div class="orders-notification">
+            <button class="ghost-button notification-button" id="orders-notification-toggle" type="button" aria-expanded="false" aria-controls="orders-notification-panel">
+              <span class="notification-icon" aria-hidden="true">🔔</span>
+              <span class="notification-text">الطلبات</span>
+              <strong class="notification-count" id="orders-notification-count">0</strong>
+            </button>
+          </div>
           <a class="ghost-button" href="index.html" target="_blank" rel="noopener noreferrer">فتح الموقع</a>
           <button class="ghost-button" id="logout-button" type="button">تسجيل الخروج</button>
           <button class="ghost-button" id="export-button" type="button">تصدير JSON</button>
@@ -29,6 +36,17 @@
         </div>
       </div>
     </header>
+
+    <aside class="orders-notification-panel" id="orders-notification-panel" hidden>
+      <div class="orders-notification-header">
+        <div>
+          <p class="eyebrow">إشعارات الطلبات</p>
+          <h2>الطلبات الواردة</h2>
+        </div>
+        <button class="ghost-button small" id="refresh-orders-button" type="button">تحديث الطلبات</button>
+      </div>
+      <div id="orders-list" class="orders-list"></div>
+    </aside>
 
     <main class="admin-main">
       <section class="admin-card">
@@ -208,13 +226,6 @@
         </div>
       </section>
 
-      <section class="admin-card">
-        <div class="block-header">
-          <h2>الطلبات الواردة</h2>
-          <button class="ghost-button small" id="refresh-orders-button" type="button">تحديث الطلبات</button>
-        </div>
-        <div id="orders-list" class="orders-list"></div>
-      </section>
     </main>
 
     <div id="admin-status" class="admin-status" hidden></div>

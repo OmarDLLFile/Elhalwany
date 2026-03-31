@@ -1,5 +1,8 @@
 const manager = window.SiteContentManager;
 let currentContent = null;
+const ordersNotificationToggle = document.getElementById("orders-notification-toggle");
+const ordersNotificationPanel = document.getElementById("orders-notification-panel");
+const ordersNotificationCount = document.getElementById("orders-notification-count");
 
 const arrayConfigs = {
   heroTrust: {
@@ -343,6 +346,20 @@ function downloadJsonFile(fileName, text) {
   URL.revokeObjectURL(url);
 }
 
+function setOrdersNotificationState(isOpen) {
+  if (!ordersNotificationToggle || !ordersNotificationPanel) {
+    return;
+  }
+
+  ordersNotificationToggle.classList.toggle("is-active", isOpen);
+  ordersNotificationToggle.setAttribute("aria-expanded", String(isOpen));
+  if (isOpen) {
+    ordersNotificationPanel.removeAttribute("hidden");
+  } else {
+    ordersNotificationPanel.setAttribute("hidden", "");
+  }
+}
+
 async function loadOrders() {
   const container = byId("orders-list");
   if (!container) {
@@ -361,6 +378,9 @@ async function loadOrders() {
     }
 
     const orders = await response.json();
+    if (ordersNotificationCount) {
+      ordersNotificationCount.textContent = Array.isArray(orders) ? String(orders.length) : "0";
+    }
     if (!Array.isArray(orders) || orders.length === 0) {
       container.innerHTML = '<p class="order-empty">لا توجد طلبات حتى الآن.</p>';
       return;
@@ -386,8 +406,43 @@ async function loadOrders() {
       )
       .join("");
   } catch (_error) {
+    if (ordersNotificationCount) {
+      ordersNotificationCount.textContent = "0";
+    }
     container.innerHTML = '<p class="order-empty">تعذر تحميل الطلبات حالياً.</p>';
   }
+}
+
+function wireOrdersNotification() {
+  ordersNotificationToggle?.addEventListener("click", () => {
+    const isOpen = ordersNotificationPanel?.hasAttribute("hidden");
+    setOrdersNotificationState(Boolean(isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!ordersNotificationPanel || !ordersNotificationToggle) {
+      return;
+    }
+
+    if (ordersNotificationPanel.hasAttribute("hidden")) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Node)) {
+      return;
+    }
+
+    if (!ordersNotificationPanel.contains(target) && !ordersNotificationToggle.contains(target)) {
+      setOrdersNotificationState(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setOrdersNotificationState(false);
+    }
+  });
 }
 
 function wireFileInputs() {
@@ -589,6 +644,7 @@ async function init() {
   wireFileInputs();
   wireArrayActions();
   wireMainActions();
+  wireOrdersNotification();
   await loadOrders();
 }
 

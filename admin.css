@@ -86,10 +86,43 @@ a {
   justify-content: flex-end;
 }
 
+.orders-notification {
+  position: relative;
+}
+
 .admin-main {
   display: grid;
   gap: 1.25rem;
   padding: 1.5rem 0 3rem;
+}
+
+.orders-notification-panel {
+  position: fixed;
+  top: 6rem;
+  left: 1rem;
+  z-index: 30;
+  width: min(460px, calc(100% - 2rem));
+  max-height: calc(100vh - 7rem);
+  padding: 1.2rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 60px rgba(8, 37, 28, 0.18);
+  backdrop-filter: blur(16px);
+}
+
+.orders-notification-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.orders-notification-header h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1.2rem;
 }
 
 .admin-card {
@@ -170,6 +203,33 @@ textarea {
   background: rgba(15, 75, 56, 0.06);
   border-color: rgba(15, 75, 56, 0.12);
   color: var(--primary);
+}
+
+.notification-button {
+  position: relative;
+  gap: 0.55rem;
+}
+
+.notification-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.notification-text {
+  font-weight: 600;
+}
+
+.notification-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  min-height: 1.7rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #13261d;
+  font-size: 0.8rem;
 }
 
 .ghost-button.small {
@@ -295,6 +355,11 @@ textarea {
   color: var(--muted);
 }
 
+.notification-button.is-active {
+  background: rgba(203, 157, 62, 0.14);
+  border-color: rgba(203, 157, 62, 0.2);
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
@@ -340,5 +405,11 @@ textarea {
   .form-grid,
   .editor-card-grid {
     grid-template-columns: 1fr;
+  }
+
+  .orders-notification-panel {
+    top: 7.25rem;
+    left: 0.75rem;
+    width: calc(100% - 1.5rem);
   }
 }
