@@ -123,6 +123,219 @@ function escapeHtml(value) {
   });
 }
 
+function applyLengthRule(id, maxLength) {
+  const field = byId(id);
+  if (field) {
+    field.maxLength = maxLength;
+  }
+}
+
+function applyAdminFieldRules() {
+  [
+    "brand-name",
+    "brand-tagline",
+    "hero-eyebrow",
+    "hero-title",
+    "hero-tagline",
+    "hero-primary-cta",
+    "hero-secondary-cta",
+    "about-label",
+    "about-title",
+    "about-experience-value",
+    "about-experience-title",
+    "products-label",
+    "products-title",
+    "products-details-label",
+    "products-order-label",
+    "why-label",
+    "why-title",
+    "gallery-label",
+    "gallery-title",
+    "testimonials-label",
+    "testimonials-title",
+    "contact-label",
+    "contact-title",
+    "contact-whatsapp-label",
+    "contact-footer-whatsapp-label",
+    "contact-map-label",
+    "contact-footer-map-label",
+  ].forEach((id) => applyLengthRule(id, 180));
+
+  [
+    "brand-footer-summary",
+    "hero-text",
+    "about-text-1",
+    "about-text-2",
+    "about-experience-text",
+    "products-subtitle",
+    "testimonials-subtitle",
+    "contact-text",
+  ].forEach((id) => applyLengthRule(id, 2000));
+
+  ["brand-logo", "hero-image", "about-image", "contact-map-url"].forEach((id) => applyLengthRule(id, 4000));
+  ["contact-whatsapp-display", "contact-phone-display"].forEach((id) => applyLengthRule(id, 20));
+  applyLengthRule("contact-whatsapp-wa-number", 20);
+}
+
+function validateRequiredText(value, label, min = 1, max = 500) {
+  const normalized = String(value || "").trim();
+  if (normalized.length < min) {
+    throw new Error(`${label} is required`);
+  }
+  if (normalized.length > max) {
+    throw new Error(`${label} is too long`);
+  }
+}
+
+function validateOptionalText(value, label, max = 2000) {
+  const normalized = String(value || "").trim();
+  if (normalized.length > max) {
+    throw new Error(`${label} is too long`);
+  }
+}
+
+function validateUrlLike(value, label) {
+  const normalized = String(value || "").trim();
+  if (!normalized) {
+    return;
+  }
+
+  const isRelativeAsset = /^[a-zA-Z0-9_./-]+\.(png|jpe?g|webp|svg|gif|ico)$/i.test(normalized);
+  const isDataImage = /^data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+$/.test(normalized);
+  if (normalized.startsWith("/") || normalized.startsWith("./") || normalized.startsWith("../") || isRelativeAsset || isDataImage) {
+    return;
+  }
+
+  try {
+    const parsed = new URL(normalized);
+    if (["http:", "https:", "tel:"].includes(parsed.protocol)) {
+      return;
+    }
+  } catch (_error) {
+    // Fall through.
+  }
+
+  throw new Error(`${label} is invalid`);
+}
+
+function validatePhone(value, label) {
+  validateRequiredText(value, label, 7, 20);
+  if (!/^[0-9+\s()/-]{7,20}$/.test(String(value).trim())) {
+    throw new Error(`${label} format is invalid`);
+  }
+}
+
+function validateDigits(value, label, min = 8, max = 20) {
+  validateRequiredText(value, label, min, max);
+  if (!/^[0-9]{8,20}$/.test(String(value).trim())) {
+    throw new Error(`${label} format is invalid`);
+  }
+}
+
+function validateContentDraft(content) {
+  validateRequiredText(content.brand.name, "Brand name", 2, 120);
+  validateRequiredText(content.brand.tagline, "Brand tagline", 2, 120);
+  validateRequiredText(content.brand.footerSummary, "Brand footer summary", 10, 300);
+  validateUrlLike(content.brand.logo, "Brand logo");
+
+  validateRequiredText(content.hero.eyebrow, "Hero eyebrow", 2, 120);
+  validateRequiredText(content.hero.title, "Hero title", 2, 120);
+  validateRequiredText(content.hero.tagline, "Hero tagline", 2, 120);
+  validateRequiredText(content.hero.text, "Hero text", 10, 600);
+  validateRequiredText(content.hero.primaryCta, "Hero primary CTA", 2, 80);
+  validateRequiredText(content.hero.secondaryCta, "Hero secondary CTA", 2, 80);
+  validateUrlLike(content.hero.image, "Hero image");
+  if (!Array.isArray(content.hero.trust) || content.hero.trust.length === 0) {
+    throw new Error("Hero trust items are required");
+  }
+  content.hero.trust.forEach((item, index) => validateRequiredText(item, `Hero trust item ${index + 1}`, 2, 140));
+  if (!Array.isArray(content.hero.metrics) || content.hero.metrics.length === 0) {
+    throw new Error("Hero metrics are required");
+  }
+  content.hero.metrics.forEach((item, index) => {
+    validateRequiredText(item.value, `Hero metric value ${index + 1}`, 1, 40);
+    validateRequiredText(item.label, `Hero metric label ${index + 1}`, 2, 80);
+  });
+
+  validateRequiredText(content.about.label, "About label", 2, 80);
+  validateRequiredText(content.about.title, "About title", 2, 180);
+  validateRequiredText(content.about.text1, "About text 1", 10, 800);
+  validateRequiredText(content.about.text2, "About text 2", 10, 800);
+  validateRequiredText(content.about.experienceValue, "About experience value", 1, 20);
+  validateRequiredText(content.about.experienceTitle, "About experience title", 2, 80);
+  validateRequiredText(content.about.experienceText, "About experience text", 5, 220);
+  validateUrlLike(content.about.image, "About image");
+
+  validateRequiredText(content.products.label, "Products label", 2, 80);
+  validateRequiredText(content.products.title, "Products title", 2, 180);
+  validateRequiredText(content.products.subtitle, "Products subtitle", 10, 260);
+  validateRequiredText(content.products.detailsLabel, "Products details label", 2, 80);
+  validateRequiredText(content.products.orderLabel, "Products order label", 2, 80);
+  if (!Array.isArray(content.products.items) || content.products.items.length === 0) {
+    throw new Error("At least one product is required");
+  }
+  content.products.items.forEach((item, index) => {
+    validateRequiredText(item.name, `Product name ${index + 1}`, 2, 120);
+    validateRequiredText(item.description, `Product description ${index + 1}`, 5, 280);
+    validateRequiredText(item.modalDescription, `Product modal description ${index + 1}`, 5, 500);
+    validateUrlLike(item.image, `Product image ${index + 1}`);
+  });
+
+  validateRequiredText(content.whyUs.label, "Why us label", 2, 80);
+  validateRequiredText(content.whyUs.title, "Why us title", 2, 180);
+  if (!Array.isArray(content.whyUs.features) || content.whyUs.features.length === 0) {
+    throw new Error("Why us features are required");
+  }
+  content.whyUs.features.forEach((item, index) => {
+    validateRequiredText(item.title, `Feature title ${index + 1}`, 2, 120);
+    validateRequiredText(item.text, `Feature text ${index + 1}`, 5, 300);
+  });
+  if (!Array.isArray(content.whyUs.trust) || content.whyUs.trust.length === 0) {
+    throw new Error("Why us trust items are required");
+  }
+  content.whyUs.trust.forEach((item, index) => {
+    validateRequiredText(item.title, `Trust title ${index + 1}`, 2, 120);
+    validateRequiredText(item.text, `Trust text ${index + 1}`, 5, 300);
+  });
+
+  validateRequiredText(content.gallery.label, "Gallery label", 2, 80);
+  validateRequiredText(content.gallery.title, "Gallery title", 2, 180);
+  if (!Array.isArray(content.gallery.items) || content.gallery.items.length === 0) {
+    throw new Error("Gallery items are required");
+  }
+  content.gallery.items.forEach((item, index) => {
+    validateRequiredText(item.alt, `Gallery alt ${index + 1}`, 2, 160);
+    validateUrlLike(item.image, `Gallery image ${index + 1}`);
+  });
+
+  validateRequiredText(content.testimonials.label, "Testimonials label", 2, 80);
+  validateRequiredText(content.testimonials.title, "Testimonials title", 2, 180);
+  validateRequiredText(content.testimonials.subtitle, "Testimonials subtitle", 5, 260);
+  if (!Array.isArray(content.testimonials.items) || content.testimonials.items.length === 0) {
+    throw new Error("Testimonials items are required");
+  }
+  content.testimonials.items.forEach((item, index) => {
+    validateRequiredText(item.title, `Testimonial title ${index + 1}`, 2, 120);
+    validateRequiredText(item.text, `Testimonial text ${index + 1}`, 5, 300);
+  });
+
+  validateRequiredText(content.contact.label, "Contact label", 2, 80);
+  validateRequiredText(content.contact.title, "Contact title", 2, 180);
+  validateRequiredText(content.contact.text, "Contact text", 10, 400);
+  validatePhone(content.contact.whatsappDisplay, "Displayed WhatsApp number");
+  validatePhone(content.contact.phoneDisplay, "Displayed phone number");
+  validateDigits(content.contact.whatsappWaNumber, "WhatsApp wa.me number");
+  validateRequiredText(content.contact.whatsappLabel, "Contact WhatsApp label", 2, 80);
+  validateRequiredText(content.contact.footerWhatsappLabel, "Footer WhatsApp label", 2, 80);
+  validateRequiredText(content.contact.mapLabel, "Map label", 2, 80);
+  validateRequiredText(content.contact.footerMapLabel, "Footer map label", 2, 80);
+  validateUrlLike(content.contact.mapUrl, "Map URL");
+  if (!Array.isArray(content.contact.addressLines) || content.contact.addressLines.length === 0) {
+    throw new Error("At least one address line is required");
+  }
+  content.contact.addressLines.forEach((line, index) => validateRequiredText(line, `Address line ${index + 1}`, 2, 160));
+}
+
 function createInput(field, value, arrayKey, index) {
   const wrapperClass = field.full ? "full" : "";
   const safeValue = typeof value === "string" ? value : "";
@@ -132,7 +345,7 @@ function createInput(field, value, arrayKey, index) {
     return `
       <label class="${wrapperClass}">
         <span>${field.label}</span>
-        <textarea data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" rows="4">${escapedValue}</textarea>
+        <textarea data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" rows="4" maxlength="2000">${escapedValue}</textarea>
       </label>
     `;
   }
@@ -141,7 +354,7 @@ function createInput(field, value, arrayKey, index) {
     return `
       <label class="${wrapperClass}">
         <span>${field.label}</span>
-        <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${escapedValue}" />
+        <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${escapedValue}" maxlength="4000" />
         <input class="file-input array-file-input" data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="file" accept="image/*" />
       </label>
     `;
@@ -150,7 +363,7 @@ function createInput(field, value, arrayKey, index) {
   return `
     <label class="${wrapperClass}">
       <span>${field.label}</span>
-      <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${escapedValue}" />
+      <input data-array="${arrayKey}" data-index="${index}" data-key="${field.key}" type="text" value="${escapedValue}" maxlength="500" />
     </label>
   `;
 }
@@ -457,6 +670,18 @@ function wireFileInputs() {
       return;
     }
 
+    if (!file.type.startsWith("image/")) {
+      showStatus("Only image files are allowed.");
+      input.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showStatus("Image size must be 5MB or less.");
+      input.value = "";
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       const result = typeof reader.result === "string" ? reader.result : "";
@@ -568,6 +793,7 @@ function wireMainActions() {
   byId("save-button")?.addEventListener("click", async () => {
     try {
       currentContent = collectForm();
+      validateContentDraft(currentContent);
       await manager.saveContent(currentContent);
       showStatus("تم حفظ البيانات. افتح الموقع أو حدّثه لرؤية التغييرات.");
     } catch (error) {
@@ -596,6 +822,7 @@ function wireMainActions() {
   byId("export-button")?.addEventListener("click", async () => {
     try {
       currentContent = collectForm();
+      validateContentDraft(currentContent);
       await manager.saveContent(currentContent);
       downloadJsonFile("alhelwany-site-content.json", JSON.stringify(currentContent, null, 2));
       showStatus("تم تصدير ملف JSON.");
@@ -620,6 +847,8 @@ function wireMainActions() {
     }
 
     try {
+      const parsed = JSON.parse(text);
+      validateContentDraft(parsed);
       currentContent = await manager.importContent(text);
       populateForm();
       showStatus("تم استيراد البيانات بنجاح.");
@@ -641,6 +870,7 @@ function wireMainActions() {
 async function init() {
   currentContent = await manager.loadContent();
   populateForm();
+  applyAdminFieldRules();
   wireFileInputs();
   wireArrayActions();
   wireMainActions();

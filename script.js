@@ -335,6 +335,88 @@ function getResolvedTheme() {
   return currentTheme;
 }
 
+function getNamePattern() {
+  return "^[\\p{L}\\s'\\-]{2,60}$";
+}
+
+function getPhonePattern() {
+  return "^[0-9+\\s()/\\-]{7,20}$";
+}
+
+function applyPublicFieldRules() {
+  const namePattern = getNamePattern();
+  const phonePattern = getPhonePattern();
+
+  [
+    byId("order-first-name"),
+    byId("order-last-name"),
+    byId("order-third-name"),
+  ].forEach((field) => {
+    if (!field) {
+      return;
+    }
+
+    field.pattern = namePattern;
+    field.setAttribute("maxlength", "60");
+  });
+
+  [byId("order-phone"), byId("order-whatsapp")].forEach((field) => {
+    if (!field) {
+      return;
+    }
+
+    field.pattern = phonePattern;
+    field.setAttribute("maxlength", "20");
+  });
+
+  const notesField = byId("order-notes");
+  if (notesField) {
+    notesField.setAttribute("maxlength", "2000");
+  }
+}
+
+function validateOrderFormFields() {
+  const nameFields = [
+    { field: byId("order-first-name"), label: t().order.firstName },
+    { field: byId("order-last-name"), label: t().order.lastName },
+    { field: byId("order-third-name"), label: t().order.thirdName },
+  ];
+  const phoneFields = [
+    { field: byId("order-phone"), label: t().order.phone },
+    { field: byId("order-whatsapp"), label: t().order.whatsapp },
+  ];
+
+  const nameRegex = /^[\p{L}\s'-]{2,60}$/u;
+  const phoneRegex = /^[0-9+\s()/-]{7,20}$/;
+
+  nameFields.forEach(({ field, label }) => {
+    if (!field) {
+      return;
+    }
+
+    const valid = nameRegex.test(field.value.trim());
+    field.setCustomValidity(valid ? "" : `${label}: 2-60 letters only`);
+  });
+
+  phoneFields.forEach(({ field, label }) => {
+    if (!field) {
+      return;
+    }
+
+    const valid = phoneRegex.test(field.value.trim());
+    field.setCustomValidity(valid ? "" : `${label}: invalid phone format`);
+  });
+
+  if (orderCountry) {
+    orderCountry.setCustomValidity(orderCountry.value ? "" : `${t().order.country} is required`);
+  }
+  if (orderGovernorate) {
+    orderGovernorate.setCustomValidity(orderGovernorate.value ? "" : `${t().order.governorate} is required`);
+  }
+
+  return orderForm?.reportValidity() ?? true;
+}
+
 function loadCart() {
   try {
     const stored = JSON.parse(window.localStorage.getItem(CART_KEY) || "[]");
@@ -1092,6 +1174,12 @@ function setupOrderForm() {
       return;
     }
 
+    if (!validateOrderFormFields()) {
+      orderStatus.textContent = t().order.failure;
+      orderStatus.removeAttribute("hidden");
+      return;
+    }
+
      const detailedItems = getCartDetailedItems();
      if (detailedItems.length === 0) {
       orderStatus.textContent = t().order.cartRequired;
@@ -1174,6 +1262,7 @@ async function init() {
   content = await contentManager.loadContent();
   applyContent();
   applyTheme();
+  applyPublicFieldRules();
   setupRevealAnimations();
   setupSectionHighlighting();
   setupNavigation();

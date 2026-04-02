@@ -239,23 +239,23 @@
             <div class="form-two-col">
               <label>
                 <span id="order-first-name-label">First Name</span>
-                <input id="order-first-name" name="firstName" type="text" required />
+                <input id="order-first-name" name="firstName" type="text" required minlength="2" maxlength="60" autocomplete="given-name" />
               </label>
               <label>
                 <span id="order-last-name-label">Last Name</span>
-                <input id="order-last-name" name="lastName" type="text" required />
+                <input id="order-last-name" name="lastName" type="text" required minlength="2" maxlength="60" autocomplete="family-name" />
               </label>
               <label>
                 <span id="order-third-name-label">Third Name</span>
-                <input id="order-third-name" name="thirdName" type="text" required />
+                <input id="order-third-name" name="thirdName" type="text" required minlength="2" maxlength="60" />
               </label>
               <label>
                 <span id="order-phone-label">Phone Number</span>
-                <input id="order-phone" name="phone" type="tel" required />
+                <input id="order-phone" name="phone" type="tel" required minlength="7" maxlength="20" inputmode="tel" autocomplete="tel" />
               </label>
               <label>
                 <span id="order-whatsapp-label">WhatsApp Number</span>
-                <input id="order-whatsapp" name="whatsapp" type="tel" required />
+                <input id="order-whatsapp" name="whatsapp" type="tel" required minlength="7" maxlength="20" inputmode="tel" />
               </label>
               <label>
                 <span id="order-country-label">Country</span>
@@ -275,7 +275,7 @@
               </label>
               <label class="full">
                 <span id="order-notes-label">Notes</span>
-                <textarea id="order-notes" name="notes" rows="4" placeholder="Optional order notes"></textarea>
+                <textarea id="order-notes" name="notes" rows="4" maxlength="2000" placeholder="Optional order notes"></textarea>
               </label>
             </div>
             <button class="button" id="order-submit-label" type="submit">Submit Order</button>

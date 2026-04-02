@@ -19,6 +19,8 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
 const MAX_STRING_LENGTH = 500;
 const MAX_NOTES_LENGTH = 2000;
 const ALLOWED_PAYMENT_METHODS = new Set(["Cash on Delivery", "Visa", "Credit Card"]);
+const PHONE_DISPLAY_REGEX = /^[0-9+\s()/-]{7,20}$/;
+const WHATSAPP_WA_REGEX = /^[0-9]{8,20}$/;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -215,6 +217,39 @@ function sanitizeText(value, maxLength = MAX_STRING_LENGTH) {
   return escapeHtml(String(value || "").trim()).slice(0, maxLength);
 }
 
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+function validateRequiredText(value, fieldName, min = 1, max = MAX_STRING_LENGTH) {
+  assert(typeof value === "string", `${fieldName} must be a string`);
+  const trimmed = value.trim();
+  assert(trimmed.length >= min, `${fieldName} is required`);
+  assert(trimmed.length <= max, `${fieldName} is too long`);
+}
+
+function validateOptionalText(value, fieldName, max = MAX_STRING_LENGTH) {
+  assert(typeof value === "string", `${fieldName} must be a string`);
+  assert(value.trim().length <= max, `${fieldName} is too long`);
+}
+
+function validateArray(value, fieldName, min = 0) {
+  assert(Array.isArray(value), `${fieldName} must be an array`);
+  assert(value.length >= min, `${fieldName} must contain at least ${min} item(s)`);
+}
+
+function validatePhoneDisplay(value, fieldName) {
+  validateRequiredText(value, fieldName, 7, 20);
+  assert(PHONE_DISPLAY_REGEX.test(value), `${fieldName} format is invalid`);
+}
+
+function validateWhatsappNumber(value, fieldName) {
+  validateRequiredText(value, fieldName, 8, 20);
+  assert(WHATSAPP_WA_REGEX.test(value), `${fieldName} format is invalid`);
+}
+
 function isAllowedUrl(value) {
   if (typeof value !== "string") {
     return false;
@@ -277,6 +312,96 @@ function sanitizeContentPayload(value) {
   return sanitized;
 }
 
+function validateContentPayload(content) {
+  assert(content && typeof content === "object" && !Array.isArray(content), "Invalid content payload");
+
+  validateRequiredText(content.brand?.name, "Brand name", 2, 120);
+  validateRequiredText(content.brand?.tagline, "Brand tagline", 2, 120);
+  validateRequiredText(content.brand?.footerSummary, "Brand footer summary", 10, 300);
+  assert(isAllowedUrl(content.brand?.logo), "Brand logo is invalid");
+
+  validateRequiredText(content.hero?.eyebrow, "Hero eyebrow", 2, 120);
+  validateRequiredText(content.hero?.title, "Hero title", 2, 120);
+  validateRequiredText(content.hero?.tagline, "Hero tagline", 2, 120);
+  validateRequiredText(content.hero?.text, "Hero text", 10, 600);
+  validateRequiredText(content.hero?.primaryCta, "Hero primary CTA", 2, 80);
+  validateRequiredText(content.hero?.secondaryCta, "Hero secondary CTA", 2, 80);
+  assert(isAllowedUrl(content.hero?.image), "Hero image is invalid");
+  validateArray(content.hero?.trust, "Hero trust items", 1);
+  content.hero.trust.forEach((item, index) => validateRequiredText(item, `Hero trust item ${index + 1}`, 2, 140));
+  validateArray(content.hero?.metrics, "Hero metrics", 1);
+  content.hero.metrics.forEach((item, index) => {
+    validateRequiredText(item?.value, `Hero metric value ${index + 1}`, 1, 40);
+    validateRequiredText(item?.label, `Hero metric label ${index + 1}`, 2, 80);
+  });
+
+  validateRequiredText(content.about?.label, "About label", 2, 80);
+  validateRequiredText(content.about?.title, "About title", 2, 180);
+  validateRequiredText(content.about?.text1, "About text 1", 10, 800);
+  validateRequiredText(content.about?.text2, "About text 2", 10, 800);
+  validateRequiredText(content.about?.experienceValue, "About experience value", 1, 20);
+  validateRequiredText(content.about?.experienceTitle, "About experience title", 2, 80);
+  validateRequiredText(content.about?.experienceText, "About experience text", 5, 220);
+  assert(isAllowedUrl(content.about?.image), "About image is invalid");
+
+  validateRequiredText(content.products?.label, "Products label", 2, 80);
+  validateRequiredText(content.products?.title, "Products title", 2, 180);
+  validateRequiredText(content.products?.subtitle, "Products subtitle", 10, 260);
+  validateRequiredText(content.products?.detailsLabel, "Products details label", 2, 80);
+  validateRequiredText(content.products?.orderLabel, "Products order label", 2, 80);
+  validateArray(content.products?.items, "Products items", 1);
+  content.products.items.forEach((item, index) => {
+    validateRequiredText(item?.name, `Product name ${index + 1}`, 2, 120);
+    validateRequiredText(item?.description, `Product description ${index + 1}`, 5, 280);
+    validateRequiredText(item?.modalDescription, `Product modal description ${index + 1}`, 5, 500);
+    assert(isAllowedUrl(item?.image), `Product image ${index + 1} is invalid`);
+  });
+
+  validateRequiredText(content.whyUs?.label, "Why us label", 2, 80);
+  validateRequiredText(content.whyUs?.title, "Why us title", 2, 180);
+  validateArray(content.whyUs?.features, "Why us features", 1);
+  content.whyUs.features.forEach((item, index) => {
+    validateRequiredText(item?.title, `Why us feature title ${index + 1}`, 2, 120);
+    validateRequiredText(item?.text, `Why us feature text ${index + 1}`, 5, 300);
+  });
+  validateArray(content.whyUs?.trust, "Why us trust items", 1);
+  content.whyUs.trust.forEach((item, index) => {
+    validateRequiredText(item?.title, `Why us trust title ${index + 1}`, 2, 120);
+    validateRequiredText(item?.text, `Why us trust text ${index + 1}`, 5, 300);
+  });
+
+  validateRequiredText(content.gallery?.label, "Gallery label", 2, 80);
+  validateRequiredText(content.gallery?.title, "Gallery title", 2, 180);
+  validateArray(content.gallery?.items, "Gallery items", 1);
+  content.gallery.items.forEach((item, index) => {
+    validateRequiredText(item?.alt, `Gallery alt ${index + 1}`, 2, 160);
+    assert(isAllowedUrl(item?.image), `Gallery image ${index + 1} is invalid`);
+  });
+
+  validateRequiredText(content.testimonials?.label, "Testimonials label", 2, 80);
+  validateRequiredText(content.testimonials?.title, "Testimonials title", 2, 180);
+  validateRequiredText(content.testimonials?.subtitle, "Testimonials subtitle", 5, 260);
+  validateArray(content.testimonials?.items, "Testimonials items", 1);
+  content.testimonials.items.forEach((item, index) => {
+    validateRequiredText(item?.title, `Testimonial title ${index + 1}`, 2, 120);
+    validateRequiredText(item?.text, `Testimonial text ${index + 1}`, 5, 300);
+  });
+
+  validateRequiredText(content.contact?.label, "Contact label", 2, 80);
+  validateRequiredText(content.contact?.title, "Contact title", 2, 180);
+  validateRequiredText(content.contact?.text, "Contact text", 10, 400);
+  validatePhoneDisplay(content.contact?.whatsappDisplay, "Displayed WhatsApp number");
+  validatePhoneDisplay(content.contact?.phoneDisplay, "Displayed phone number");
+  validateWhatsappNumber(content.contact?.whatsappWaNumber, "WhatsApp wa.me number");
+  validateRequiredText(content.contact?.whatsappLabel, "Contact WhatsApp label", 2, 80);
+  validateRequiredText(content.contact?.footerWhatsappLabel, "Footer WhatsApp label", 2, 80);
+  validateRequiredText(content.contact?.mapLabel, "Map label", 2, 80);
+  validateRequiredText(content.contact?.footerMapLabel, "Footer map label", 2, 80);
+  assert(isAllowedUrl(content.contact?.mapUrl), "Contact map URL is invalid");
+  validateArray(content.contact?.addressLines, "Contact address lines", 1);
+  content.contact.addressLines.forEach((line, index) => validateRequiredText(line, `Address line ${index + 1}`, 2, 160));
+}
+
 function sanitizeOrderPayload(body) {
   const items = Array.isArray(body.items)
     ? body.items
@@ -322,9 +447,20 @@ function sanitizeOrderPayload(body) {
     throw new Error("Invalid payment method");
   }
 
+  assert(PHONE_DISPLAY_REGEX.test(order.phone), "Phone format is invalid");
+  assert(PHONE_DISPLAY_REGEX.test(order.whatsapp), "WhatsApp format is invalid");
+  validateRequiredText(order.country, "Country", 2, 80);
+  validateRequiredText(order.governorate, "Governorate", 2, 80);
+  validateOptionalText(order.notes, "Notes", MAX_NOTES_LENGTH);
+
   if (order.items.length === 0) {
     throw new Error("Cart is empty");
   }
+
+  order.items.forEach((item, index) => {
+    validateRequiredText(item.name, `Order item name ${index + 1}`, 2, 120);
+    assert(Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity <= 999, `Order item quantity ${index + 1} is invalid`);
+  });
 
   return order;
 }
@@ -375,6 +511,7 @@ async function handleApi(req, res, pathname) {
   if (pathname === "/api/auth/login" && req.method === "POST") {
     try {
       const body = await parseBody(req);
+      validateRequiredText(body.password, "Password", 8, 128);
       const stored = readJson(adminPasswordPath);
       if (!body.password || body.password !== stored.password) {
         sendJson(res, 401, { error: "Invalid password" });
@@ -415,7 +552,9 @@ async function handleApi(req, res, pathname) {
         return true;
       }
 
-      writeJson(contentPath, sanitizeContentPayload(body));
+      const sanitizedContent = sanitizeContentPayload(body);
+      validateContentPayload(sanitizedContent);
+      writeJson(contentPath, sanitizedContent);
       sendJson(res, 200, { ok: true });
     } catch (error) {
       sendJson(res, 400, { error: error.message });

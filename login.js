@@ -17,6 +17,15 @@ loginForm?.addEventListener("submit", async (event) => {
   const password = loginPassword?.value || "";
   loginError?.setAttribute("hidden", "");
 
+  if (!loginForm.reportValidity()) {
+    return;
+  }
+
+  if (password.trim().length < 8 || password.length > 128) {
+    showError("كلمة المرور يجب أن تكون بين 8 و128 حرفاً.");
+    return;
+  }
+
   try {
     const response = await fetch("/api/auth/login", {
       method: "POST",
