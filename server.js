@@ -172,6 +172,132 @@ function sendFile(res, filePath) {
   fs.createReadStream(filePath).pipe(res);
 }
 
+function getPublicOrigin(req) {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const protocol = Array.isArray(forwardedProto)
+    ? forwardedProto[0]
+    : (forwardedProto || "http").split(",")[0].trim() || "http";
+  return `${protocol}://${req.headers.host}`;
+}
+
+function escapeJsonForHtml(value) {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
+function resolvePublicUrl(origin, value, fallbackPath = "/") {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  if (!normalized) {
+    return new URL(fallbackPath, origin).toString();
+  }
+
+  if (normalized.startsWith("data:image/")) {
+    return normalized;
+  }
+
+  try {
+    return new URL(normalized, origin).toString();
+  } catch (_error) {
+    return new URL(fallbackPath, origin).toString();
+  }
+}
+
+function buildSeoSchema(origin) {
+  const content = readJson(contentPath);
+  const siteUrl = `${origin}/`;
+  const imageUrl = resolvePublicUrl(origin, content.brand.logo, "/assets/images/logo.jpg");
+
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": `${siteUrl}#business`,
+      name: content.brand.name,
+      alternateName: "Al Helwany Pickles, Elhalwany Pickels",
+      description: `${content.brand.name} يقدم زيتون مخلل وخيار مخلل ولفت وجزر وبصل ومشكل بخبرة تتجاوز 25 سنة.`,
+      url: siteUrl,
+      image: imageUrl,
+      logo: imageUrl,
+      telephone: content.contact.phoneDisplay,
+      areaServed: ["الجيزة", "القاهرة الكبرى"],
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: content.contact.addressLines.join("، "),
+        addressRegion: "الجيزة",
+        addressCountry: "EG",
+      },
+      sameAs: [
+        `https://wa.me/${content.contact.whatsappWaNumber}`,
+      ],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "منتجات مخللات الحلواني",
+      itemListElement: content.products.items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "Product",
+          name: item.name,
+          description: item.description,
+          image: resolvePublicUrl(origin, item.image, "/assets/images/logo.jpg"),
+          brand: {
+            "@type": "Brand",
+            name: content.brand.name,
+          },
+        },
+      })),
+    },
+  ];
+}
+
+function sendHtmlFile(req, res, filePath) {
+  const origin = getPublicOrigin(req);
+  const content = readJson(contentPath);
+  const rawHtml = fs.readFileSync(filePath, "utf8");
+  const siteUrl = `${origin}/`;
+  const ogImage = resolvePublicUrl(origin, content.hero.image, "/assets/images/logo.jpg");
+  const html = rawHtml
+    .replaceAll("__SITE_URL__", siteUrl)
+    .replaceAll("__SITE_ORIGIN__", origin)
+    .replaceAll("__OG_IMAGE__", ogImage)
+    .replace("__SCHEMA_JSON__", escapeJsonForHtml(buildSeoSchema(origin)));
+
+  sendHtml(res, 200, html);
+}
+
+function sendRobots(req, res) {
+  const origin = getPublicOrigin(req);
+  const body = `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`;
+  res.writeHead(200, {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Cache-Control": "public, max-age=3600",
+  });
+  res.end(body);
+}
+
+function sendSitemap(req, res) {
+  const origin = getPublicOrigin(req);
+  const lastmod = new Date().toISOString();
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${origin}/</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+  res.writeHead(200, {
+    "Content-Type": "application/xml; charset=utf-8",
+    "Cache-Control": "public, max-age=3600",
+  });
+  res.end(xml);
+}
+
 function isMutationMethod(method) {
   return method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE";
 }
@@ -608,8 +734,18 @@ async function handleApi(req, res, pathname) {
 }
 
 function handleStatic(req, res, pathname) {
+  if (pathname === "/robots.txt") {
+    sendRobots(req, res);
+    return;
+  }
+
+  if (pathname === "/sitemap.xml") {
+    sendSitemap(req, res);
+    return;
+  }
+
   if (pathname === "/login" || pathname === "/login.html") {
-    serveLoginPage(res);
+    sendHtmlFile(req, res, path.join(rootDir, "login.html"));
     return;
   }
 
@@ -636,6 +772,11 @@ function handleStatic(req, res, pathname) {
   if (!fs.existsSync(requestedPath)) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not found");
+    return;
+  }
+
+  if (path.extname(requestedPath).toLowerCase() === ".html") {
+    sendHtmlFile(req, res, requestedPath);
     return;
   }
 
