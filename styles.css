@@ -978,6 +978,59 @@ body.theme-dark .testimonials {
   gap: 1rem;
 }
 
+.seo-copy {
+  background:
+    radial-gradient(circle at top right, rgba(203, 157, 62, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(15, 75, 56, 0.04), transparent);
+}
+
+body.theme-dark .seo-copy {
+  background:
+    radial-gradient(circle at top right, rgba(203, 157, 62, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(8, 30, 23, 0.2), transparent);
+}
+
+.seo-copy-grid,
+.faq-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.seo-copy-card,
+.faq-item {
+  padding: 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+}
+
+.seo-copy-card h3,
+.faq-item summary {
+  margin: 0 0 0.65rem;
+  font-size: 1.1rem;
+}
+
+.seo-copy-card p,
+.faq-item p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item p {
+  margin-top: 0.8rem;
+}
+
 .testimonial-card {
   padding: 1.4rem;
   border: 1px solid var(--border);
@@ -1258,7 +1311,8 @@ body.theme-dark .lightbox-dialog {
 
   .trust-band,
   .footer-grid,
-  .testimonials-grid {
+  .testimonials-grid,
+  .seo-copy-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 

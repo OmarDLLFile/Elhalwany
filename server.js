@@ -208,8 +208,45 @@ function buildSeoSchema(origin) {
   const content = readJson(contentPath);
   const siteUrl = `${origin}/`;
   const imageUrl = resolvePublicUrl(origin, content.brand.logo, "/assets/images/logo.jpg");
+  const faqItems = [
+    {
+      question: "ما أنواع المخللات المتوفرة لدى مخللات الحلواني؟",
+      answer: "نوفر زيتون مخلل، خيار مخلل، لفت، جزر، بصل مخلل ومخلل مشكل مع اهتمام بالجودة والطعم المصري الأصيل.",
+    },
+    {
+      question: "هل يمكن الطلب عبر واتساب؟",
+      answer: "نعم، يمكن التواصل مباشرة عبر واتساب أو استخدام نموذج الطلب داخل الموقع لإرسال البيانات والمنتجات المطلوبة.",
+    },
+    {
+      question: "ما مناطق التوصيل المتاحة؟",
+      answer: "نخدم الجيزة وكفر طهرمس وبولاق الدكرور والمناطق المحيطة مع إمكانية تأكيد التوصيل حسب المنطقة.",
+    },
+    {
+      question: "هل المنتجات مناسبة للمنازل والمطاعم؟",
+      answer: "نعم، المنتجات مناسبة للاستخدام المنزلي والمطاعم والطلبات المتكررة مع جودة ثابتة.",
+    },
+  ];
 
   return [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": `${siteUrl}#website`,
+      url: siteUrl,
+      name: content.brand.name,
+      alternateName: ["Al Helwany Pickles", "Elhalwany Pickels"],
+      inLanguage: ["ar-EG", "en"],
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": `${siteUrl}#organization`,
+      name: content.brand.name,
+      alternateName: ["Al Helwany Pickles", "Elhalwany Pickels"],
+      url: siteUrl,
+      logo: imageUrl,
+      sameAs: [`https://wa.me/${content.contact.whatsappWaNumber}`],
+    },
     {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
@@ -248,6 +285,18 @@ function buildSeoSchema(origin) {
             "@type": "Brand",
             name: content.brand.name,
           },
+        },
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
         },
       })),
     },

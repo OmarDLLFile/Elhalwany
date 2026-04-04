@@ -127,6 +127,27 @@ const translations = {
         ["هوية حديثة ومنتج واضح", "التقديم البصري العصري يساعد العلامة على الظهور بشكل أنظف وأكثر احترافية أمام العملاء."],
       ],
     },
+    seoCopy: {
+      label: "مخللات مصرية طبيعية",
+      title: "زيتون مخلل وخيار مخلل ومشكل بطعم مصري أصيل",
+      intro: "مخللات الحلواني يقدم تشكيلة متنوعة من المخلل المصري تشمل الزيتون المخلل، الخيار المخلل، اللفت، الجزر، البصل المخلل والمخلل المشكل بخبرة أكثر من 25 سنة.",
+      cards: [
+        ["خيار مخلل وزيتون مخلل بجودة ثابتة", "نهتم باختيار الخامات الطازجة وتحضيرها بعناية للحفاظ على القرمشة والطعم المتوازن، سواء في الخيار المخلل أو الزيتون المخلل أو المخلل المشكل."],
+        ["مناسب للمنازل والمطاعم والطلبات المتكررة", "منتجات مخللات الحلواني مناسبة للاستخدام اليومي، ولطلبات المطاعم والتوزيع، مع اهتمام واضح بالجودة والطزاجة وثبات النكهة."],
+        ["توصيل في الجيزة والمناطق المحيطة", "نخدم الجيزة وكفر طهرمس وبولاق الدكرور والمناطق القريبة، مع إمكانية التواصل السريع عبر واتساب لطلبات التجزئة والجملة."],
+      ],
+    },
+    faq: {
+      label: "الأسئلة الشائعة",
+      title: "كل ما يحتاجه العميل قبل طلب المخلل",
+      subtitle: "معلومات سريعة عن الطلب، مناطق التوصيل، المنتجات، وطريقة التواصل مع مخللات الحلواني.",
+      items: [
+        ["ما أنواع المخللات المتوفرة لدى مخللات الحلواني؟", "نوفر زيتون مخلل، خيار مخلل، لفت، جزر، بصل مخلل ومخلل مشكل، مع الاهتمام بالطعم المصري الأصيل والجودة الثابتة."],
+        ["هل يمكن الطلب عبر واتساب؟", "نعم، يمكن إرسال الطلب مباشرة عبر واتساب، كما يمكن تعبئة نموذج الطلب داخل الموقع لتسجيل البيانات والمنتجات المطلوبة."],
+        ["هل منتجات مخللات الحلواني مناسبة للمنازل والمطاعم؟", "نعم، نقدم منتجات مناسبة للاستخدام المنزلي وكذلك للمطاعم والطلبات المتكررة، مع اهتمام واضح بثبات الجودة."],
+        ["ما مناطق التوصيل المتاحة؟", "نخدم الجيزة وكفر طهرمس وبولاق الدكرور والمناطق المحيطة، ويمكن التواصل لتأكيد التوصيل حسب المنطقة."],
+      ],
+    },
     order: {
       label: "طلب جديد",
       title: "أرسل بيانات الطلب والدفع",
@@ -264,6 +285,27 @@ const translations = {
         ["Perfect for everyday meals", "Balanced flavor and crisp texture make it a reliable side for home meals and sandwiches."],
         ["Great for restaurants and repeat orders", "Consistent quality and easy WhatsApp ordering with a range that covers the most requested items."],
         ["Modern branding with clear product appeal", "A polished visual presentation helps the brand feel cleaner and more professional to customers."],
+      ],
+    },
+    seoCopy: {
+      label: "Natural Egyptian Pickles",
+      title: "Pickled olives, pickled cucumbers, and mixed pickles with authentic Egyptian flavor",
+      intro: "Al Helwany Pickles offers a range of Egyptian pickles including pickled olives, pickled cucumbers, turnips, carrots, pickled onions, and mixed pickles backed by more than 25 years of experience.",
+      cards: [
+        ["Consistent quality in pickled cucumbers and pickled olives", "We use fresh ingredients and careful preparation to preserve crunch, balance, and reliable flavor across every product line."],
+        ["Suitable for homes, restaurants, and repeat orders", "Our products are prepared for everyday household use as well as restaurants, resellers, and recurring bulk requests."],
+        ["Delivery across Giza and nearby areas", "We serve Giza, Kafr Tohormos, Bulaq El Dakrour, and nearby areas with fast WhatsApp ordering and direct contact."],
+      ],
+    },
+    faq: {
+      label: "FAQ",
+      title: "Common questions before ordering",
+      subtitle: "Quick answers about products, delivery areas, ordering, and how Al Helwany Pickles works.",
+      items: [
+        ["What pickles are available from Al Helwany Pickles?", "We offer pickled olives, pickled cucumbers, turnips, carrots, pickled onions, and mixed pickles with authentic Egyptian flavor."],
+        ["Can I order through WhatsApp?", "Yes. You can contact us directly through WhatsApp, or use the website order form to submit your details and requested items."],
+        ["Are the products suitable for homes and restaurants?", "Yes. The products are suitable for household use, restaurants, repeated orders, and wholesale-style demand depending on need."],
+        ["Which delivery areas are covered?", "We serve Giza, Kafr Tohormos, Bulaq El Dakrour, and nearby areas. Contact us directly to confirm delivery coverage."],
       ],
     },
     order: {
@@ -776,6 +818,39 @@ function renderTestimonials() {
         </article>
       `
     )
+      .join("");
+}
+
+function renderSeoCopy() {
+  setText("seo-copy-label", t().seoCopy.label);
+  setText("seo-copy-title", t().seoCopy.title);
+  setText("seo-copy-intro", t().seoCopy.intro);
+
+  t().seoCopy.cards.forEach((item, index) => {
+    setText(`seo-copy-card-${index + 1}-title`, item[0]);
+    setText(`seo-copy-card-${index + 1}-text`, item[1]);
+  });
+}
+
+function renderFaq() {
+  setText("faq-label", t().faq.label);
+  setText("faq-title", t().faq.title);
+  setText("faq-subtitle", t().faq.subtitle);
+
+  const faqList = byId("faq-list");
+  if (!faqList) {
+    return;
+  }
+
+  faqList.innerHTML = t().faq.items
+    .map(
+      (item) => `
+        <details class="faq-item reveal">
+          <summary>${item[0]}</summary>
+          <p>${item[1]}</p>
+        </details>
+      `
+    )
     .join("");
 }
 
@@ -826,6 +901,8 @@ function applyContent() {
   renderWhyUs();
   renderGallery();
   renderTestimonials();
+  renderSeoCopy();
+  renderFaq();
   renderContact();
   renderOrderSection();
 }
